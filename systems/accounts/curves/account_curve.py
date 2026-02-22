@@ -364,6 +364,7 @@ class accountCurve(pd.Series):
             "sharpe",
             "sortino",
             "avg_drawdown",
+            "worst_drawdown",
             "time_in_drawdown",
             "calmar",
             "avg_return_to_drawdown",

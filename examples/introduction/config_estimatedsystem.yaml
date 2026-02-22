@@ -1,0 +1,12 @@
+# config for introduction estimated system
+start_date: "1984-01-01" #1972 1984
+
+Notes: |
+  Data periods:
+  Instrument	Start date	End date	Span
+  SOFR	1984-03-23	2024-03-28	~40 years
+  US10	1982-08-30	2024-03-28	~42 years
+  EUROSTX	2014-03-13	2024-03-28	~10 years
+  MXP	1995-09-15	2024-03-28	~29 years
+  CORN	1972-10-18	2024-03-28	~51 years
+  V2X	2013-01-02	2024-03-28	~11 years

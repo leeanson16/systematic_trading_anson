@@ -1,0 +1,77 @@
+estimatedsystem.py run at 2026-02-23T01:12:43.748211
+
+Sharpe: 0.5647292539864627
+
+Percent stats:
+  min: -23.12
+  max: 8.152
+  median: 0.03539
+  mean: 0.04532
+  std: 1.284
+  skew: -0.7534
+  ann_mean: 11.6
+  ann_std: 20.54
+  sharpe: 0.5647
+  sortino: 0.7181
+  avg_drawdown: -16.45
+  worst_drawdown: -56
+  time_in_drawdown: 0.9628
+  calmar: 0.2072
+  avg_return_to_drawdown: 0.7051
+  avg_loss: -0.8889
+  avg_gain: 0.8835
+  gaintolossratio: 0.994
+  profitfactor: 1.11
+  hitrate: 0.5276
+  t_stat: 3.616
+  p_value: 0.0003002
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Buy and Hold percent stats:
+  min: -2.597
+  max: 2.918
+  median: 0.00235
+  mean: 0.006592
+  std: 0.4035
+  skew: 0.1731
+  ann_mean: 1.687
+  ann_std: 6.455
+  sharpe: 0.2614
+  sortino: 0.3888
+  avg_drawdown: -7.744
+  worst_drawdown: -17.83
+  time_in_drawdown: 0.9714
+  calmar: 0.09463
+  avg_return_to_drawdown: 0.2179
+  avg_loss: -0.2925
+  avg_gain: 0.2943
+  gaintolossratio: 1.006
+  profitfactor: 1.047
+  hitrate: 0.5099
+  t_stat: 0.8364
+  p_value: 0.403
+
+SP500 B&H percent stats:
+  min: -10.12
+  max: 13.73
+  median: 0.01904
+  mean: 0.02346
+  std: 0.9135
+  skew: -0.0815
+  ann_mean: 6.006
+  ann_std: 14.62
+  sharpe: 0.4109
+  sortino: 0.4851
+  avg_drawdown: -8.858
+  worst_drawdown: -75.39
+  time_in_drawdown: 0.9141
+  calmar: 0.07967
+  avg_return_to_drawdown: 0.6781
+  avg_loss: -0.5985
+  avg_gain: 0.5584
+  gaintolossratio: 0.933
+  profitfactor: 1.089
+  hitrate: 0.5385
+  t_stat: 2.674
+  p_value: 0.007512

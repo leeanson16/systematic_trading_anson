@@ -1,0 +1,28 @@
+estimatedsystem.py run at 2026-02-22T18:54:15.181995
+
+Sharpe: 0.5647292539864627
+
+Percent stats:
+  min: -23.12
+  max: 8.152
+  median: 0.03539
+  mean: 0.04532
+  std: 1.284
+  skew: -0.7534
+  ann_mean: 11.6
+  ann_std: 20.54
+  sharpe: 0.5647
+  sortino: 0.7181
+  avg_drawdown: -16.45
+  time_in_drawdown: 0.9628
+  calmar: 0.2072
+  avg_return_to_drawdown: 0.7051
+  avg_loss: -0.8889
+  avg_gain: 0.8835
+  gaintolossratio: 0.994
+  profitfactor: 1.11
+  hitrate: 0.5276
+  t_stat: 3.616
+  p_value: 0.0003002
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
