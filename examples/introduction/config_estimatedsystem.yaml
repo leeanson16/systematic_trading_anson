@@ -1,12 +1,31 @@
 # config for introduction estimated system
-start_date: "1984-01-01" #1972 1984
+start_date: "1993-01-29" #1972 1984 1993-01-29
+end_date: "2024-03-28"
+
+# Set to true to use BBG data files (instrument code + "_BBG" suffix, e.g. SOFR_BBG.csv).
+# Files may cover a shorter period than instrument_periods below — that is fine.
+use_bbg: True
+
+# Expected data periods per instrument (informational; files may have less data).
+# Use base instrument names here; _BBG suffix is appended in code when use_bbg: True.
+instrument_periods_may_have_bbg_suffix:
+  SOFR:    {start: "1984-03-23", end: "2024-03-28"}
+  US10:    {start: "1982-08-30", end: "2024-03-28"}
+  EUROSTX: {start: "2014-03-13", end: "2024-03-28"}
+  MXP:     {start: "1995-09-15", end: "2024-03-28"}
+  CORN:    {start: "1972-10-18", end: "2024-03-28"}
+  V2X:     {start: "2013-01-02", end: "2024-03-28"}
+
+instrument_periods:
+  SP500:            {start: "1982-09-14", end: "2024-03-28"}
+  SPY_yfinance:     {start: "1993-01-29", end: "2024-03-28"} #1972-10-18 1993-01-29
 
 Notes: |
-  Data periods:
+  Data periods (BBG):
   Instrument	Start date	End date	Span
-  SOFR	1984-03-23	2024-03-28	~40 years
-  US10	1982-08-30	2024-03-28	~42 years
-  EUROSTX	2014-03-13	2024-03-28	~10 years
-  MXP	1995-09-15	2024-03-28	~29 years
-  CORN	1972-10-18	2024-03-28	~51 years
-  V2X	2013-01-02	2024-03-28	~11 years
+  SOFR_BBG	1984-03-23	2024-03-28	~40 years
+  US10_BBG	1982-08-30	2024-03-28	~42 years
+  EUROSTX_BBG	2014-03-13	2024-03-28	~10 years
+  MXP_BBG	1995-09-15	2024-03-28	~29 years
+  CORN_BBG	1972-10-18	2024-03-28	~51 years
+  V2X_BBG	2013-01-02	2024-03-28	~11 years

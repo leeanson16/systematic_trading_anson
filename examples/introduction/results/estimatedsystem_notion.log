@@ -1,4 +1,4 @@
-estimatedsystem.py run at 2026-02-23T02:07:36.902985
+estimatedsystem.py run at 2026-02-24T12:28:06.858348
 
 Data period: 1984-01-03 to 2024-03-28
 
@@ -30,31 +30,30 @@ Percent stats:
 
   You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
 
-Buy and Hold percent stats:
-  Data period: 1984-01-09 to 2024-03-28
-  Skipped 3 dates with missing/zero/NaN weights (e.g. 1984-01-04 ... 1984-01-06).
-  min: -29.04
-  max: 29.12
-  median: 0
-  mean: -0.0007395
-  std: 3.506
-  skew: 0.3762
-  ann_mean: -0.1893
-  ann_std: 56.1
-  sharpe: -0.003375
-  sortino: -0.003526
-  avg_drawdown: -107.5
-  geometric_worst_drawdown: -99.99 (peak: 1984-05-30, trough: 1990-05-03)
-  time_in_drawdown: 0.997
-  calmar: -0.0004787
-  avg_return_to_drawdown: -0.001761
-  avg_loss: -1.213
-  avg_gain: 1.177
-  gaintolossratio: 0.9704
-  profitfactor: 0.9987
-  hitrate: 0.5072
-  t_stat: -0.02161
-  p_value: 0.9828
+B&H percent stats:
+  Data period: 1984-01-03 to 2024-03-28
+  min: -8.416
+  max: 7.05
+  median: 0.006922
+  mean: 0.03475
+  std: 1.108
+  skew: -0.08567
+  ann_mean: 8.895
+  ann_std: 17.72
+  sharpe: 0.5019
+  sortino: 0.7522
+  avg_drawdown: -16.51
+  geometric_worst_drawdown: -56.30 (peak: 2012-12-10, trough: 2018-11-08)
+  time_in_drawdown: 0.9566
+  calmar: 0.1173
+  avg_return_to_drawdown: 0.5387
+  avg_loss: -0.8083
+  avg_gain: 0.8626
+  gaintolossratio: 1.067
+  profitfactor: 1.087
+  hitrate: 0.5046
+  t_stat: 3.214
+  p_value: 0.001314
 
 SP500 B&H percent stats:
   Data period: 1984-01-03 to 2024-03-27

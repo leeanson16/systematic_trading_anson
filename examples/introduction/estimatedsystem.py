@@ -10,7 +10,35 @@ from datetime import datetime
 from sysdata.config.configdata import Config
 from systems.provided.futures_chapter15.estimatedsystem import futures_system
 from systems.accounts.from_returns import account_curve_from_returns
+from systems.accounts.curves.account_curve import accountCurve
+from systems.accounts.pandl_calculators.pandl_cash_costs import pandlCalculationWithCashCostsAndFills
 from matplotlib.pyplot import gcf
+
+
+_EXCEL_ERRORS = ["#VALUE!", "#N/A!", "#N/A", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"]
+
+def _reformat_bbg_dates_if_needed(csv_path):
+    """Fix BBG CSV in place (idempotent):
+    - Reformat date column from M/D/YYYY to YYYY-MM-DD
+    - Replace Excel error strings (#VALUE!, #N/A, etc.) with NaN (empty cell)
+    """
+    # Read all columns as strings so we can cheaply detect what needs fixing
+    df_str = pd.read_csv(csv_path, dtype=str)
+    sample = df_str.iloc[0, 0]
+    date_needs_fix = True
+    try:
+        pd.to_datetime(sample, format="%Y-%m-%d")
+        date_needs_fix = False
+    except ValueError:
+        pass
+    had_errors = df_str.isin(_EXCEL_ERRORS).any().any()
+    if not date_needs_fix and not had_errors:
+        return
+    # Re-read with proper dtypes, converting Excel errors to NaN
+    df = pd.read_csv(csv_path, na_values=_EXCEL_ERRORS, keep_default_na=True)
+    if date_needs_fix:
+        df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0], format="mixed").dt.strftime("%Y-%m-%d")
+    df.to_csv(csv_path, index=False)
 
 
 def _geo_worst_drawdown(returns_decimal):
@@ -26,6 +54,8 @@ def _geo_worst_drawdown(returns_decimal):
     peak_date = geo_cum.loc[:trough_date][geo_cum.loc[:trough_date] >= peak_val * (1 - 1e-8)].index[-1]
     return worst_val, peak_date, trough_date
 
+
+
 # results folder under introduction/results
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 results_dir = os.path.join(_script_dir, "results")
@@ -38,6 +68,26 @@ config = Config([
     "systems.provided.futures_chapter15.futuresestimateconfig.yaml",
     "examples.introduction.config_estimatedsystem.yaml",
 ])
+_repo_root = os.path.dirname(os.path.dirname(_script_dir))
+if config.get_element_or_default("use_bbg", False):
+    # Append _BBG suffix to every instrument code so the system loads *_BBG.csv files
+    config.instruments = [code + "_BBG" for code in config.instruments]
+    # Preprocess BBG CSV files: fix M/D/YYYY dates and Excel error strings in-place
+    for _subdir in ("adjusted_prices_csv", "multiple_prices_csv"):
+        _data_dir = os.path.join(_repo_root, "data", "futures", _subdir)
+        for _f in os.listdir(_data_dir):
+            if _f.endswith("_BBG.csv"):
+                _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
+
+# Preprocess *_yfinance.csv (e.g. SPY_yfinance): mm/dd/yyyy -> yyyy-mm-dd in-place
+for _subdir in ("adjusted_prices_csv", "multiple_prices_csv"):
+    _data_dir = os.path.join(_repo_root, "data", "futures", _subdir)
+    if os.path.isdir(_data_dir):
+        for _f in os.listdir(_data_dir):
+            if _f.endswith("_yfinance.csv"):
+                _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
+
+# SPY.csv in data/futures/adjusted_prices_csv is loaded by default data
 system = futures_system(config=config)
 # system.accounts.portfolio().curve().plot()
 # gcf().savefig(plot_path)
@@ -46,69 +96,132 @@ system.cache.pickle("private.this_system_name.pck")
 system.cache.unpickle("private.this_system_name.pck")
 
 portfolio = system.accounts.portfolio()
-sharpe_val = portfolio.sharpe()
+end_date_str = config.get_element_or_default("end_date", None)
+sys_end = pd.Timestamp(end_date_str) if end_date_str else None
 pct = portfolio.percent
+if sys_end is not None:
+    pct_dec = pd.Series(pct.values, index=pct.index) / 100
+    pct_dec = pct_dec.loc[pct_dec.index <= sys_end]
+    pct = account_curve_from_returns(pct_dec).percent
 stats_obj = pct.stats()
+sharpe_val = next((val for name, val in (stats_obj[0] if stats_obj else []) if name == "sharpe"), float("nan"))
 sys_geo_dd, sys_peak_date, sys_trough_date = _geo_worst_drawdown(pd.Series(pct.values, index=pct.index) / 100)
 
-# Buy and Hold: from config start_date; weighted sum when multiple assets, single asset when only one has data
+def _bh_curve_for_instrument(system, code):
+    """B&H accountCurve for one instrument: always long at the same vol-targeted size as the system.
+    For instruments in the portfolio: vol scalar × instr weight × IDM (forecast = +10, fully long).
+    For instruments not in the portfolio (e.g. SP500 benchmark): vol scalar only (all capital, IDM = 1).
+    Roll costs included.
+    """
+    price = system.accounts.get_instrument_prices_for_position_or_forecast(code)
+    # use portfolio-level sizing if the instrument is in the system, subsystem-level otherwise
+    portfolio_instruments = system.get_instrument_list()
+    if code in portfolio_instruments:
+        avg_pos = system.accounts.get_average_position_for_instrument_at_portfolio_level(code)
+    else:
+        avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
+    positions = avg_pos.reindex(price.index).ffill().fillna(0.0)
+    raw_costs = system.accounts.get_raw_cost_data(code)
+    fx = system.accounts.get_fx_rate(code)
+    value_per_point = system.accounts.get_value_of_block_price_move(code)
+    capital = system.accounts.get_notional_capital()
+    rolls_per_year = system.accounts.get_rolls_per_year(code)
+    vol_normalise_currency_costs = system.config.vol_normalise_currency_costs
+    multiply_roll_costs_by = system.config.multiply_roll_costs_by
+
+    pandl_calc = pandlCalculationWithCashCostsAndFills(
+        price,
+        raw_costs=raw_costs,
+        positions=positions,
+        capital=capital,
+        value_per_point=value_per_point,
+        fx=fx,
+        rolls_per_year=rolls_per_year,
+        vol_normalise_currency_costs=vol_normalise_currency_costs,
+        multiply_roll_costs_by=multiply_roll_costs_by,
+    )
+    return accountCurve(pandl_calc)
+
+def _build_bh_stats(curve_or_returns, label):
+    """Build stats + geo drawdown from an accountCurve or decimal daily returns series."""
+    if isinstance(curve_or_returns, accountCurve):
+        curve = curve_or_returns
+        returns_decimal = pd.Series(curve.percent.values, index=curve.percent.index) / 100
+    else:
+        curve = account_curve_from_returns(curve_or_returns)
+        returns_decimal = curve_or_returns
+    stats_obj = curve.percent.stats()
+    geo_dd, peak, trough = _geo_worst_drawdown(returns_decimal.dropna())
+    return curve, stats_obj, geo_dd, peak, trough
+
+# B&H: from config start_date; positions are the same vol-targeted sizes as the system
+# Each instrument uses avg_pos = vol_scalar × instr_weight × IDM (forecast = +10, always long)
+# Portfolio daily return = sum of per-instrument percentage contributions (no re-weighting needed)
 start_date_str = config.get_element_or_default("start_date", None)
 bh_start = pd.Timestamp(start_date_str) if start_date_str else None
+if sys_end is None:
+    sys_end = pct.index[-1]
 instruments = system.get_instrument_list()
-pct_returns_list = []
+
+# Per-instrument period bounds: instrument_periods_may_have_bbg_suffix (remapped when use_bbg) + instrument_periods (no suffix)
+_periods_may_bbg = config.get_element_or_default("instrument_periods_may_have_bbg_suffix", {}) or {}
+_periods_no_suffix = config.get_element_or_default("instrument_periods", {}) or {}
+if config.get_element_or_default("use_bbg", False):
+    _base = [c.replace("_BBG", "") for c in config.instruments]
+    _remapped = {(k + "_BBG" if k in _base else k): v for k, v in _periods_may_bbg.items()}
+    _instr_periods_raw = dict(_remapped, **_periods_no_suffix)
+else:
+    _instr_periods_raw = dict(_periods_may_bbg, **_periods_no_suffix)
+
+def _instr_window(code):
+    """Return (eff_start, eff_end) for a code, merging instrument_periods with global bounds."""
+    p = _instr_periods_raw.get(code, {}) or {}
+    i_start = pd.Timestamp(p["start"]) if p.get("start") else None
+    i_end = pd.Timestamp(p["end"]) if p.get("end") else None
+    eff_start = max(bh_start, i_start) if (bh_start and i_start) else (bh_start or i_start)
+    eff_end = min(sys_end, i_end) if (sys_end and i_end) else (sys_end or i_end)
+    return eff_start, eff_end
+
+# Build per-instrument B&H portfolio-level % contributions, each clipped to its own period
+instr_pct_list = []
 for code in instruments:
-    prices = system.rawdata.get_daily_prices(code)
-    pct_returns_list.append(prices.pct_change(fill_method=None))
-pct_returns_df = pd.concat(pct_returns_list, axis=1, join="outer")
-pct_returns_df.columns = instruments
-# clip extreme daily returns (e.g. bad data) so min/max stats stay sane; decimal -1 = -100%
-pct_returns_df = pct_returns_df.clip(lower=-1.0, upper=1.0)
-if bh_start is not None:
-    pct_returns_df = pct_returns_df.loc[pct_returns_df.index >= bh_start]
-weights = system.portfolio.get_instrument_weights()
-weight_cols = [c for c in instruments if c in weights.columns]
-# only use dates where system has weights (no bfill from future); ffill within range
-first_weight_date = weights.index.min()
-bh_from = max(bh_start, first_weight_date) if bh_start is not None else first_weight_date
-pct_returns_df = pct_returns_df.loc[pct_returns_df.index >= bh_from]
-weights_sub = weights[weight_cols].reindex(pct_returns_df.index).ffill()
-weights_sub = weights_sub.div(weights_sub.sum(axis=1), axis=0)
+    c = _bh_curve_for_instrument(system, code)
+    s = pd.Series(c.percent.values, index=c.percent.index, name=code)
+    eff_start, eff_end = _instr_window(code)
+    if eff_start is not None:
+        s = s.loc[s.index >= eff_start]
+    if eff_end is not None:
+        s = s.loc[s.index <= eff_end]
+    instr_pct_list.append(s)
+pct_returns_df = pd.concat(instr_pct_list, axis=1, join="outer")
 
-def _bh_return_row(row, w):
-    avail_mask = row[weight_cols].notna()
-    avail_cols = [c for c in weight_cols if avail_mask[c]]
-    n = len(avail_cols)
-    if n == 0:
-        return (np.nan, False)
-    if n == 1:
-        return (row[avail_cols[0]], False)
-    w_row = w.loc[row.name][avail_cols]
-    if w_row.isna().any() or (w_row <= 0).any() or w_row.sum() == 0 or not np.isfinite(w_row.sum()):
-        return (np.nan, True)
-    w_row = w_row / w_row.sum()
-    return ((row[avail_cols] * w_row).sum(), False)
+# sum portfolio contributions each day (NaN only when every instrument is NaN)
+bh_pct_sum = pct_returns_df.sum(axis=1, min_count=1)
+# divide by 100: percent → decimal for geo drawdown and account_curve_from_returns
+bh_pct_returns = bh_pct_sum.dropna() / 100
+_, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date = _build_bh_stats(bh_pct_returns, "B&H")
 
-_bh_results = pct_returns_df.apply(lambda r: _bh_return_row(r, weights_sub), axis=1)
-bh_pct_returns = pd.Series([x[0] for x in _bh_results], index=_bh_results.index).dropna()
-bh_skipped = [d for d, (_, skip) in _bh_results.items() if skip]
-bh_skipped_count = len(bh_skipped)
-bh_curve = account_curve_from_returns(bh_pct_returns)
-bh_stats_obj = bh_curve.percent.stats()
-bh_geo_dd, bh_peak_date, bh_trough_date = _geo_worst_drawdown(bh_pct_returns)
+# SP500 B&H: clipped to SP500's own instrument_period (if defined), else global bounds
+sp500_c = _bh_curve_for_instrument(system, "SP500")
+sp500_returns = pd.Series(sp500_c.percent.values, index=sp500_c.percent.index)
+sp500_eff_start, sp500_eff_end = _instr_window("SP500")
+if sp500_eff_start is not None:
+    sp500_returns = sp500_returns.loc[sp500_returns.index >= sp500_eff_start]
+if sp500_eff_end is not None:
+    sp500_returns = sp500_returns.loc[sp500_returns.index <= sp500_eff_end]
+sp500_returns_dec = sp500_returns.dropna() / 100
+_, sp500_stats_obj, sp500_geo_dd, sp500_peak_date, sp500_trough_date = _build_bh_stats(sp500_returns_dec, "SP500 B&H")
 
-# SP500 Buy and Hold: read from repo data folder, same period as config (start_date) and system end
-_repo_root = os.path.dirname(os.path.dirname(_script_dir))
-_sp500_csv = os.path.join(_repo_root, "data", "futures", "adjusted_prices_csv", "SP500.csv")
-sp500_raw = pd.read_csv(_sp500_csv, index_col=0, parse_dates=True)
-sp500_prices = sp500_raw.iloc[:, 0].sort_index()
-sp500_returns = sp500_prices.pct_change(fill_method=None).dropna()
-if bh_start is not None:
-    sp500_returns = sp500_returns.loc[sp500_returns.index >= bh_start]
-sys_end = portfolio.percent.index[-1]
-sp500_returns = sp500_returns.loc[sp500_returns.index <= sys_end]
-sp500_curve = account_curve_from_returns(sp500_returns)
-sp500_stats_obj = sp500_curve.percent.stats()
-sp500_geo_dd, sp500_peak_date, sp500_trough_date = _geo_worst_drawdown(sp500_returns)
+# SPY B&H: uses instrument SPY_yfinance (data/futures/adjusted_prices_csv/SPY_yfinance.csv)
+spy_c = _bh_curve_for_instrument(system, "SPY_yfinance")
+spy_returns = pd.Series(spy_c.percent.values, index=spy_c.percent.index)
+spy_eff_start, spy_eff_end = _instr_window("SPY_yfinance")
+if spy_eff_start is not None:
+    spy_returns = spy_returns.loc[spy_returns.index >= spy_eff_start]
+if spy_eff_end is not None:
+    spy_returns = spy_returns.loc[spy_returns.index <= spy_eff_end]
+spy_returns_dec = spy_returns.dropna() / 100
+_, spy_stats_obj, spy_geo_dd, spy_peak_date, spy_trough_date = _build_bh_stats(spy_returns_dec, "SPY B&H")
 
 def _period_str(ix):
     if ix is None or len(ix) == 0:
@@ -117,12 +230,19 @@ def _period_str(ix):
 
 with open(log_path, "w") as f:
     f.write("estimatedsystem.py run at %s\n\n" % datetime.now().isoformat())
-    f.write("Data period: %s\n\n" % _period_str(portfolio.percent.index))
+    f.write("Data period: %s\n\n" % _period_str(pct.index))
     f.write("Sharpe: %s\n\n" % sharpe_val)
+    _daily_fields = {"min", "max", "median", "mean", "std", "skew"}
     def _write_stats(f, stats_obj, geo_dd, peak_date, trough_date):
         items = stats_obj[0] if isinstance(stats_obj, (list, tuple)) and len(stats_obj) >= 1 else []
+        daily_written = False
         for name, val in items:
-            if name == "worst_drawdown":
+            if name in _daily_fields:
+                if not daily_written:
+                    f.write("  Daily:\n")
+                    daily_written = True
+                f.write("    %s: %s\n" % (name, val))
+            elif name == "worst_drawdown":
                 f.write("  geometric_worst_drawdown: %.2f (peak: %s, trough: %s)\n" % (
                     geo_dd,
                     peak_date.strftime("%Y-%m-%d") if hasattr(peak_date, "strftime") else peak_date,
@@ -134,15 +254,12 @@ with open(log_path, "w") as f:
     f.write("Percent stats:\n")
     _write_stats(f, stats_obj, sys_geo_dd, sys_peak_date, sys_trough_date)
     f.write("\n  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)\n")
-    f.write("\nBuy and Hold percent stats:\n")
+    f.write("\nB&H percent stats:\n")
     f.write("  Data period: %s\n" % _period_str(bh_pct_returns.index))
-    if bh_skipped_count > 0:
-        f.write("  Skipped %d dates with missing/zero/NaN weights (e.g. %s ... %s).\n" % (
-            bh_skipped_count,
-            bh_skipped[0].strftime("%Y-%m-%d") if hasattr(bh_skipped[0], "strftime") else bh_skipped[0],
-            bh_skipped[-1].strftime("%Y-%m-%d") if hasattr(bh_skipped[-1], "strftime") else bh_skipped[-1],
-        ))
     _write_stats(f, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date)
     f.write("\nSP500 B&H percent stats:\n")
     f.write("  Data period: %s\n" % _period_str(sp500_returns.index))
     _write_stats(f, sp500_stats_obj, sp500_geo_dd, sp500_peak_date, sp500_trough_date)
+    f.write("\nSPY B&H percent stats:\n")
+    f.write("  Data period: %s\n" % _period_str(spy_returns.index))
+    _write_stats(f, spy_stats_obj, spy_geo_dd, spy_peak_date, spy_trough_date)

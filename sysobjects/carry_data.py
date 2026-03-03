@@ -32,6 +32,9 @@ class rawCarryData(pd.DataFrame):
         return _total_year_frac_from_contract_series(self.carry_contract_as_float())
 
     def raw_futures_roll(self) -> pd.Series:
+        """Always, 
+        if CarryOffset = -1, roll_diff = negative
+        """
         raw_roll = self.price - self.carry
 
         raw_roll[raw_roll == 0] = np.nan
