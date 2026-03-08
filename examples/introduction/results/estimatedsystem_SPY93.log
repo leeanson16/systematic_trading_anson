@@ -86,25 +86,25 @@ SP500 B&H percent stats:
 SPY B&H percent stats:
   Data period: 1993-01-29 to 2024-03-28
   Daily:
-    min: -9.844
-    max: 6.454
-    median: 0.06029
-    mean: 0.06257
-    std: 1.363
-    skew: -0.5453
-  ann_mean: 16.02
-  ann_std: 21.8
-  sharpe: 0.7346
-  sortino: 0.977
-  avg_drawdown: -13.76
-  geometric_worst_drawdown: -55.44 (peak: 2000-03-24, trough: 2003-03-11)
-  time_in_drawdown: 0.9215
-  calmar: 0.217
-  avg_return_to_drawdown: 1.164
-  avg_loss: -0.9797
-  avg_gain: 1.026
-  gaintolossratio: 1.047
-  profitfactor: 1.133
-  hitrate: 0.5196
-  t_stat: 4.14
-  p_value: 3.511e-05
+    min: -9.729
+    max: 6.448
+    median: 0.05452
+    mean: 0.05802
+    std: 1.355
+    skew: -0.5397
+  ann_mean: 14.85
+  ann_std: 21.68
+  sharpe: 0.6851
+  sortino: 0.9122
+  avg_drawdown: -14.49
+  geometric_worst_drawdown: -55.92 (peak: 2000-03-24, trough: 2003-03-11)
+  time_in_drawdown: 0.9269
+  calmar: 0.1982
+  avg_return_to_drawdown: 1.025
+  avg_loss: -0.9744
+  avg_gain: 1.02
+  gaintolossratio: 1.046
+  profitfactor: 1.124
+  hitrate: 0.5178
+  t_stat: 3.861
+  p_value: 0.0001138

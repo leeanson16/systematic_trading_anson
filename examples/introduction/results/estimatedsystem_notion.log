@@ -56,26 +56,27 @@ B&H percent stats:
   p_value: 0.001314
 
 SP500 B&H percent stats:
-  Data period: 1984-01-03 to 2024-03-27
-  min: -10.12
-  max: 13.73
-  median: 0.01917
-  mean: 0.02374
-  std: 0.9271
-  skew: -0.08143
-  ann_mean: 6.077
-  ann_std: 14.83
-  sharpe: 0.4096
-  sortino: 0.4855
-  avg_drawdown: -9.102
-  geometric_worst_drawdown: -61.04 (peak: 2000-03-24, trough: 2009-03-09)
-  time_in_drawdown: 0.9141
-  calmar: 0.0806
-  avg_return_to_drawdown: 0.6676
-  avg_loss: -0.6111
-  avg_gain: 0.5703
-  gaintolossratio: 0.9332
-  profitfactor: 1.088
-  hitrate: 0.5383
-  t_stat: 2.623
-  p_value: 0.008725
+  Data period: 1984-01-03 to 2024-03-28
+  Daily:
+    min: -21.53
+    max: 5.772
+    median: 0.05637
+    mean: 0.04259
+    std: 1.372
+    skew: -1.005
+  ann_mean: 10.9
+  ann_std: 21.95
+  sharpe: 0.4966
+  sortino: 0.6341
+  avg_drawdown: -19.46
+  geometric_worst_drawdown: -63.64 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9452
+  calmar: 0.1196
+  avg_return_to_drawdown: 0.5602
+  avg_loss: -0.9777
+  avg_gain: 0.9931
+  gaintolossratio: 1.016
+  profitfactor: 1.09
+  hitrate: 0.5177
+  t_stat: 3.18
+  p_value: 0.001475

@@ -28,3 +28,6 @@ venv/
 
 # libreoffice
 .~lock.*
+
+# backup
+data/futures/adjusted_prices_csv - 030420261507/
