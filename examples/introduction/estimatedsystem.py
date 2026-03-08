@@ -61,7 +61,7 @@ _script_dir = os.path.dirname(os.path.abspath(__file__))
 results_dir = os.path.join(_script_dir, "results")
 os.makedirs(results_dir, exist_ok=True)
 _run_ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-log_path = os.path.join(results_dir, "estimatedsystem_%s.log" % _run_ts)
+log_path = os.path.join(results_dir, "es_%s.log" % _run_ts)
 plot_path = os.path.join(results_dir, "portfolio_curve_%s.png" % _run_ts)
 
 config = Config([
@@ -256,6 +256,7 @@ with open(log_path, "w") as f:
             else:
                 f.write("  %s: %s\n" % (name, val))
 
+    f.write("Instruments: %s\n\n" % instruments)
     f.write("Percent stats:\n")
     _write_stats(f, stats_obj, sys_geo_dd, sys_peak_date, sys_trough_date)
     f.write("\n  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)\n")

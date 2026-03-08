@@ -1,0 +1,114 @@
+estimatedsystem.py run at 2026-03-08T22:33:53.200480
+
+Data period: 1994-07-12 to 2024-03-28
+
+Sharpe: 0.8766
+
+Instruments: ['AAPL_yfinance', 'AMZN_yfinance', 'GOOGL_yfinance', 'META_yfinance', 'MSFT_yfinance', 'NVDA_yfinance', 'TSLA_yfinance']
+
+Percent stats:
+  Daily:
+    min: -13.13
+    max: 15.2
+    median: 0.02631
+    mean: 0.1003
+    std: 1.831
+    skew: 0.1057
+  ann_mean: 25.68
+  ann_std: 29.3
+  sharpe: 0.8766
+  sortino: 1.125
+  avg_drawdown: -18
+  geometric_worst_drawdown: -40.78 (peak: 2007-10-23, trough: 2009-07-07)
+  time_in_drawdown: 0.9444
+  calmar: 0.535
+  avg_return_to_drawdown: 1.427
+  avg_loss: -1.098
+  avg_gain: 1.215
+  gaintolossratio: 1.106
+  profitfactor: 1.19
+  hitrate: 0.5183
+  t_stat: 4.824
+  p_value: 1.434e-06
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -11.31
+    max: 10.53
+    median: 0.07668
+    mean: 0.1126
+    std: 1.56
+    skew: -0.0837
+  ann_mean: 28.81
+  ann_std: 24.97
+  sharpe: 1.154
+  sortino: 1.67
+  avg_drawdown: -11.79
+  geometric_worst_drawdown: -45.51 (peak: 2000-03-24, trough: 2002-10-09)
+  time_in_drawdown: 0.9024
+  calmar: 0.5306
+  avg_return_to_drawdown: 2.444
+  avg_loss: -1.084
+  avg_gain: 1.216
+  gaintolossratio: 1.122
+  profitfactor: 1.217
+  hitrate: 0.5203
+  t_stat: 6.351
+  p_value: 2.26e-10
+
+B&H benchmarks (all-in, full vol-targeted):
+
+SP500 B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -11.19
+    max: 5.643
+    median: 0.06919
+    mean: 0.04642
+    std: 1.345
+    skew: -0.6068
+  ann_mean: 11.88
+  ann_std: 21.53
+  sharpe: 0.552
+  sortino: 0.7249
+  avg_drawdown: -20.17
+  geometric_worst_drawdown: -61.96 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9376
+  calmar: 0.1377
+  avg_return_to_drawdown: 0.5892
+  avg_loss: -0.9832
+  avg_gain: 0.9879
+  gaintolossratio: 1.005
+  profitfactor: 1.099
+  hitrate: 0.5224
+  t_stat: 3.038
+  p_value: 0.002389
+
+SPY_yfinance B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -9.781
+    max: 6.346
+    median: 0.06358
+    mean: 0.06377
+    std: 1.356
+    skew: -0.5525
+  ann_mean: 16.32
+  ann_std: 21.69
+  sharpe: 0.7525
+  sortino: 1.001
+  avg_drawdown: -13.92
+  geometric_worst_drawdown: -54.74 (peak: 2000-03-24, trough: 2003-03-11)
+  time_in_drawdown: 0.919
+  calmar: 0.2253
+  avg_return_to_drawdown: 1.173
+  avg_loss: -0.9803
+  avg_gain: 1.019
+  gaintolossratio: 1.04
+  profitfactor: 1.136
+  hitrate: 0.5221
+  t_stat: 4.141
+  p_value: 3.494e-05

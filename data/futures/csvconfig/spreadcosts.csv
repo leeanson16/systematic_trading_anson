@@ -423,6 +423,13 @@ SP400,0.34
 SP500,0.13
 SPY,0.01
 SPY_yfinance,0.01
+NVDA_yfinance,0.01
+AAPL_yfinance,0.01
+MSFT_yfinance,0.01
+AMZN_yfinance,0.01
+META_yfinance,0.01
+TSLA_yfinance,0.01
+GOOGL_yfinance,0.01
 SPY_yfinance_unadj,0.01
 SPY_yfinance_adj,0.01
 SP500-GROWTH,0.0

@@ -96,9 +96,12 @@ class futuresSimData(simData):
         """
 
         all_price_data = self.get_multiple_prices(instrument_code)
-        carry_data = all_price_data[
-            [price_name, carry_name, price_contract_name, carry_contract_name]
-        ]
+        carry_cols = [price_name, carry_name, price_contract_name, carry_contract_name]
+        # ETF (e.g. SPY_yfinance): optional columns for carry = PRICE*DIVIDEND_YIELD - CARRY*FUNDING_COST
+        for opt in ("DIVIDEND_YIELD", "FUNDING_COST"):
+            if opt in all_price_data.columns:
+                carry_cols.append(opt)
+        carry_data = all_price_data[carry_cols]
 
         return carry_data
 

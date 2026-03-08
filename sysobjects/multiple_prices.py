@@ -285,11 +285,13 @@ class futuresMultiplePrices(pd.DataFrame):
 
 
 def _check_valid_multiple_price_data(data):
-    data_present = sorted(data.columns)
+    data_present = set(data.columns)
     try:
-        assert data_present == multiple_data_columns
+        assert set(multiple_data_columns).issubset(data_present)
     except AssertionError:
-        raise Exception("futuresMultiplePrices has to conform to pattern")
+        raise Exception(
+            "futuresMultiplePrices must have at least columns: %s" % multiple_data_columns
+        )
 
 
 multiple_data_columns = sorted(

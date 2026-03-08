@@ -426,10 +426,17 @@ SOYMEAL,Soybean Meal,100,USD,Ags,2.97,0,0,US
 SOYOIL,Soybean oil,600,USD,Ags,2.97,0,0,US
 SP400,E-mini S&P Midcap 400 Futures,100,USD,Equity,2.25,0,0,US
 SP500,US equity index S&P500,50,USD,Equity,2.25,0,0,US
-SPY,SPDR S&P 500 ETF,1,USD,Equity,0,0,0,US
-SPY_yfinance,SPDR S&P 500 ETF (yfinance),1,USD,Equity,0,0,0,US
-SPY_yfinance_unadj,SPDR S&P 500 ETF (yfinance unadjusted),1,USD,Equity,0,0,0,US
-SPY_yfinance_adj,SPDR S&P 500 ETF (yfinance adjusted),1,USD,Equity,0,0,0,US
+NVDA_yfinance,NVIDIA Corp (yfinance),1,USD,Equity,0,0.0004,0,US
+AAPL_yfinance,Apple Inc (yfinance),1,USD,Equity,0,0.0004,0,US
+MSFT_yfinance,Microsoft Corp (yfinance),1,USD,Equity,0,0.0004,0,US
+AMZN_yfinance,Amazon.com Inc (yfinance),1,USD,Equity,0,0.0004,0,US
+META_yfinance,Meta Platforms Inc (yfinance),1,USD,Equity,0,0.0004,0,US
+TSLA_yfinance,Tesla Inc (yfinance),1,USD,Equity,0,0.0004,0,US
+GOOGL_yfinance,Alphabet Inc (yfinance),1,USD,Equity,0,0.0004,0,US
+SPY,SPDR S&P 500 ETF,1,USD,Equity,0,0.0004,0,US
+SPY_yfinance,SPDR S&P 500 ETF (yfinance),1,USD,Equity,0,0.0004,0,US
+SPY_yfinance_unadj,SPDR S&P 500 ETF (yfinance unadjusted),1,USD,Equity,0,0.0004,0,US
+SPY_yfinance_adj,SPDR S&P 500 ETF (yfinance adjusted),1,USD,Equity,0,0.0004,0,US
 SP500_micro,S&P 500 micro,5,USD,Equity,0.62,0,0,US
 SP500_mini,E-mini S&P 500 ESG,500,USD,Equity,0,0,0,US
 SP500-GROWTH,S&P 500 / Citigroup Growth Index,250,USD,Equity,0.85,0,0,US
@@ -589,9 +596,9 @@ YENEUR,YENEUR currency,125000,JPY,FX,329.4,0,0,US
 YENEUR-ICE,EUR.JPY,125000,JPY,FX,0,0,0,US
 ZAR,South African Rand,500000,USD,FX,2.47,0,0,US
 ZINC_LME,Zinc - LME,25,USD,Metals,0,0,0,EMEA
-CORN_BBG,Corn (BBG),50.0,USD,Ags,2.97,0.0,0,US
-EUROSTX_BBG,European equity index EUROSTOXX50 (BBG),10.0,EUR,Equity,2.0,0.0,0,EMEA
-MXP_BBG,MEXUSD currency (BBG),500000.0,USD,FX,2.47,0.0,0,US
-SOFR_BBG,SOFR 3-month average (BBG),2500.0,USD,Bond,2.12,0.0,0,US
-US10_BBG,US 10 year bond note (BBG),1000.0,USD,Bond,1.67,0.0,0,US
-V2X_BBG,Vol European equity V2X (BBG),100.0,EUR,Vol,2.0,0.0,0,EMEA
+CORN_BBG,Corn (BBG),50,USD,Ags,2.97,0,0,US
+EUROSTX_BBG,European equity index EUROSTOXX50 (BBG),10,EUR,Equity,2,0,0,EMEA
+MXP_BBG,MEXUSD currency (BBG),500000,USD,FX,2.47,0,0,US
+SOFR_BBG,SOFR 3-month average (BBG),2500,USD,Bond,2.12,0,0,US
+US10_BBG,US 10 year bond note (BBG),1000,USD,Bond,1.67,0,0,US
+V2X_BBG,Vol European equity V2X (BBG),100,EUR,Vol,2,0,0,EMEA

@@ -325,6 +325,8 @@ class instrumentCosts(object):
         )
 
         ann_stdev_instrument_currency = ann_stdev_price_units * block_price_multiplier
+        if ann_stdev_instrument_currency <= 0 or not np.isfinite(ann_stdev_instrument_currency):
+            return 1.0
 
         return cost_instrument_currency / ann_stdev_instrument_currency
 

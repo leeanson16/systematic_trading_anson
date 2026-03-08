@@ -20,6 +20,9 @@ class rawCarryData(pd.DataFrame):
         return unique_differential
 
     def raw_differential(self) -> pd.Series:
+        # ETF (e.g. SPY_yfinance): roll_differentials = 1 year when DIVIDEND_YIELD and FUNDING_COST present
+        if "DIVIDEND_YIELD" in self.columns and "FUNDING_COST" in self.columns:
+            return pd.Series(1.0, index=self.index)
         price_contract_as_frac = self.price_contract_as_year_frac()
         carry_contract_as_frac = self.carry_contract_as_year_frac()
 
@@ -32,10 +35,11 @@ class rawCarryData(pd.DataFrame):
         return _total_year_frac_from_contract_series(self.carry_contract_as_float())
 
     def raw_futures_roll(self) -> pd.Series:
-        """Always, 
-        if CarryOffset = -1, roll_diff = negative
-        """
-        raw_roll = self.price - self.carry
+        """Futures: PRICE - CARRY. ETF (e.g. SPY_yfinance): PRICE*DIVIDEND_YIELD - CARRY*FUNDING_COST."""
+        if "DIVIDEND_YIELD" in self.columns and "FUNDING_COST" in self.columns:
+            raw_roll = self.PRICE * self.DIVIDEND_YIELD - self.CARRY * self.FUNDING_COST
+        else:
+            raw_roll = self.price - self.carry
 
         raw_roll[raw_roll == 0] = np.nan
 

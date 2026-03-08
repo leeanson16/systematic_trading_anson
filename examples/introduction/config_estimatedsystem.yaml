@@ -4,15 +4,27 @@ end_date: "2024-03-28"
 
 # Set to true to use BBG data files (instrument code + "_BBG" suffix, e.g. SOFR_BBG.csv).
 # Files may cover a shorter period than instrument_periods below — that is fine.
-use_bbg: True
+use_bbg: False
+
 # Optional: override portfolio instruments (default from futuresestimateconfig.yaml).
 # Uncomment and edit to change; when use_bbg: true, _BBG suffix is appended in code.
 instruments:
-  SPY_yfinance:    {start: "1994-07-12", end: "2024-03-28"}
+  [NVDA_yfinance, 
+  AAPL_yfinance, 
+  MSFT_yfinance, 
+  AMZN_yfinance, 
+  META_yfinance, 
+  TSLA_yfinance, 
+  GOOGL_yfinance]
 
 bnh_instruments:
   ['SP500',
   'SPY_yfinance']
+
+# When an ETF (e.g. SPY_yfinance) is in instruments and its multiple_prices has 
+# DIVIDEND_YIELD and FUNDING_COST:
+#   raw_futures_roll = PRICE*DIVIDEND_YIELD − CARRY*FUNDING_COST, 
+# roll_differentials = 1 (years).
 
 Notes: |
   Data periods (BBG):

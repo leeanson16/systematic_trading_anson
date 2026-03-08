@@ -2,11 +2,10 @@
 Download market data and simple metrics via yfinance and Fed (FRED).
 
 Outputs:
-  - GSPC.csv         : ^GSPC (S&P 500 index) daily prices
-  - SPY_yfinance_unadj.csv : SPY unadjusted (auto_adjust=False); columns: CARRY, CARRY_CONTRACT, PRICE, PRICE_CONTRACT, FORWARD, FORWARD_CONTRACT, DIVIDEND_YIELD, FUNDING_COST
-  - SPY_yfinance_adj.csv   : SPY adjusted (auto_adjust=True); DATETIME and price only
+  - data/anson/GSPC.csv, SPY_yfinance_unadj.csv, SPY_yfinance_adj.csv
+  - data/futures/multiple_prices_csv/{CODE}.csv (unadj) and adjusted_prices_csv/{CODE}.csv (adj) for NVDA_yfinance, AAPL_yfinance, MSFT_yfinance, AMZN_yfinance, META_yfinance, TSLA_yfinance, GOOGL_yfinance
 
-All files are written to: pysystemtradeanson/data/my yfinance
+If an output file already exists, that file is not re-fetched or overwritten.
 """
 
 import os
@@ -14,18 +13,39 @@ import os
 import pandas as pd
 import yfinance as yf
 
+YFINANCE_TICKERS = ["NVDA", "AAPL", "MSFT", "AMZN", "META", "TSLA", "GOOGL"]
+YFINANCE_INSTRUMENT_SUFFIX = "_yfinance"
+
 
 def _repo_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def _out_dir() -> str:
-    path = os.path.join(_repo_root(), "data", "my yfinance")
+    path = os.path.join(_repo_root(), "data", "anson")
     os.makedirs(path, exist_ok=True)
     return path
 
 
-def _download_price_series(symbol: str, filename: str) -> None:
+def _multiple_prices_dir() -> str:
+    path = os.path.join(_repo_root(), "data", "futures", "multiple_prices_csv")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _adjusted_prices_dir() -> str:
+    path = os.path.join(_repo_root(), "data", "futures", "adjusted_prices_csv")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _download_price_series(symbol: str, filename: str, out_dir: str = None) -> None:
+    if out_dir is None:
+        out_dir = _out_dir()
+    out_path = os.path.join(out_dir, filename)
+    if os.path.isfile(out_path):
+        print("Exists, skipping: %s" % out_path)
+        return
     ticker = yf.Ticker(symbol)
     df = ticker.history(period="max", auto_adjust=True)
     if df.empty:
@@ -34,17 +54,15 @@ def _download_price_series(symbol: str, filename: str) -> None:
     df.index = df.index.tz_localize(None)
     df.index = df.index.normalize() + pd.Timedelta(hours=23)
     df.index.name = "DATETIME"
-
-    out_path = os.path.join(_out_dir(), filename)
     df.to_csv(out_path)
     print("Saved %d rows for %s to %s" % (len(df), symbol, out_path))
     print("  Range: %s to %s" % (df.index[0], df.index[-1]))
 
 
-def _get_spy_price_and_dividend_yield(auto_adjust: bool = False):
-    """Return (spy_price_df, div_yield_series). Div yield is truncated to drop first 365 days."""
-    spy = yf.Ticker("SPY")
-    px = spy.history(period="max", auto_adjust=auto_adjust)
+def _get_ticker_price_and_dividend_yield(symbol: str, auto_adjust: bool = False):
+    """Return (price_df, div_yield_series). Div yield truncated to drop first 365 days."""
+    ticker = yf.Ticker(symbol)
+    px = ticker.history(period="max", auto_adjust=auto_adjust)
     if px.empty:
         return None, pd.Series(dtype=float)
     price = px[["Close"]].rename(columns={"Close": "price"})
@@ -52,7 +70,7 @@ def _get_spy_price_and_dividend_yield(auto_adjust: bool = False):
     price.index = price.index.normalize() + pd.Timedelta(hours=23)
     price.index.name = "DATETIME"
 
-    divs = spy.dividends
+    divs = ticker.dividends
     if divs.empty:
         yield_1y = pd.Series(index=price.index, dtype=float)
         yield_1y[:] = float("nan")
@@ -70,14 +88,13 @@ def _get_spy_price_and_dividend_yield(auto_adjust: bool = False):
         yield_1y = trailing_div / price["price"].values
         yield_1y.index = price.index
         yield_1y.name = "dividend_yield_1y"
-    # Truncate first year of dividend yield
     if len(yield_1y) > 365:
         yield_1y = yield_1y.iloc[365:]
     return price, yield_1y
 
 
 def _download_treasury_3mo() -> pd.DataFrame:
-    """Fetch Daily Treasury Par Yield Curve 3-month rate (FRED DGS3MO). Return df (used for FUNDING_COST in SPY outputs)."""
+    """Fetch Daily Treasury Par Yield Curve 3-month rate (FRED DGS3MO). Return df."""
     url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS3MO"
     df = pd.read_csv(url)
     date_col = "observation_date" if "observation_date" in df.columns else "DATE"
@@ -85,17 +102,20 @@ def _download_treasury_3mo() -> pd.DataFrame:
     return df
 
 
-def _build_and_save_spy_with_div_and_funding(
-    spy_price: pd.DataFrame,
+def _build_and_save_with_div_and_funding(
+    price_df: pd.DataFrame,
     div_yield: pd.Series,
     rate_df: pd.DataFrame,
+    output_path: str,
     rate_col: str = "DGS3MO",
-    output_filename: str = "SPY_yfinance_unadj.csv",
     minimal_columns: bool = False,
 ) -> None:
-    """Inner-join div yield and rate series on date; merge with SPY price; write output_filename with FUNDING_COST = rate/100."""
-    if spy_price is None or spy_price.empty or div_yield.empty:
-        print("No SPY price or div yield, skipping %s" % output_filename)
+    """Inner-join div yield and rate; merge with price; write to output_path. FUNDING_COST = rate/100. Skip if output_path exists."""
+    if os.path.isfile(output_path):
+        print("Exists, skipping: %s" % output_path)
+        return
+    if price_df is None or price_df.empty or div_yield.empty:
+        print("No price or div yield, skipping %s" % output_path)
         return
     date_col = "observation_date" if "observation_date" in rate_df.columns else "DATE"
     rate_clean = rate_df.dropna(subset=[date_col, rate_col]).copy()
@@ -104,7 +124,6 @@ def _build_and_save_spy_with_div_and_funding(
     div_df = div_yield.to_frame("DIVIDEND_YIELD")
     div_df["date"] = div_df.index.normalize() if hasattr(div_df.index, "normalize") else div_df.index
 
-    # Expand rate to daily (ffill) so we have a value for every div date, then inner-join
     rate_daily = rate_clean.set_index("date")[[rate_col]]
     day_range = pd.date_range(div_df["date"].min(), div_df["date"].max(), freq="B")
     rate_daily = rate_daily.reindex(day_range).ffill().bfill()
@@ -113,19 +132,17 @@ def _build_and_save_spy_with_div_and_funding(
     merged["FUNDING_COST"] = merged[rate_col] / 100
     merged = merged.drop(columns=[rate_col])
     if merged.empty:
-        print("No overlap after inner-join, skipping %s" % output_filename)
+        print("No overlap after inner-join, skipping %s" % output_path)
         return
 
-    # Attach SPY price for these dates (spy_price index is EOD datetime)
-    spy_by_date = spy_price.copy()
-    spy_by_date.index = spy_by_date.index.normalize()
-    merged["price"] = merged["date"].map(spy_by_date["price"])
+    price_by_date = price_df.copy()
+    price_by_date.index = price_by_date.index.normalize()
+    merged["price"] = merged["date"].map(price_by_date["price"])
     merged = merged.dropna(subset=["price"])
     if merged.empty:
-        print("No SPY price on joined dates, skipping %s" % output_filename)
+        print("No price on joined dates, skipping %s" % output_path)
         return
 
-    # DATETIME = date at end-of-day (23:00)
     merged["DATETIME"] = merged["date"] + pd.Timedelta(hours=23)
     if minimal_columns:
         out = merged.set_index("DATETIME")[["price"]].copy()
@@ -141,9 +158,8 @@ def _build_and_save_spy_with_div_and_funding(
         out = merged.set_index("DATETIME")[
             ["CARRY", "CARRY_CONTRACT", "PRICE", "PRICE_CONTRACT", "FORWARD", "FORWARD_CONTRACT", "DIVIDEND_YIELD", "FUNDING_COST"]
         ]
-    out_path = os.path.join(_out_dir(), output_filename)
-    out.to_csv(out_path)
-    print("Saved %s (%d rows) to %s" % (output_filename, len(out), out_path))
+    out.to_csv(output_path)
+    print("Saved %d rows to %s" % (len(out), output_path))
     print("  Range: %s to %s" % (out.index[0], out.index[-1]))
 
 
@@ -152,15 +168,37 @@ def main() -> None:
 
     treasury_3mo_df = _download_treasury_3mo()
 
-    spy_price_unadj, div_yield_unadj = _get_spy_price_and_dividend_yield(auto_adjust=False)
-    _build_and_save_spy_with_div_and_funding(
-        spy_price_unadj, div_yield_unadj, treasury_3mo_df, output_filename="SPY_yfinance_unadj.csv"
-    )
+    # SPY: data/anson, with _unadj / _adj suffix
+    spy_unadj_path = os.path.join(_out_dir(), "SPY_yfinance_unadj.csv")
+    spy_adj_path = os.path.join(_out_dir(), "SPY_yfinance_adj.csv")
+    if not os.path.isfile(spy_unadj_path):
+        spy_price_unadj, div_yield_unadj = _get_ticker_price_and_dividend_yield("SPY", auto_adjust=False)
+        _build_and_save_with_div_and_funding(
+            spy_price_unadj, div_yield_unadj, treasury_3mo_df, spy_unadj_path, minimal_columns=False
+        )
+    if not os.path.isfile(spy_adj_path):
+        spy_price_adj, div_yield_adj = _get_ticker_price_and_dividend_yield("SPY", auto_adjust=True)
+        _build_and_save_with_div_and_funding(
+            spy_price_adj, div_yield_adj, treasury_3mo_df, spy_adj_path, minimal_columns=True
+        )
 
-    spy_price_adj, div_yield_adj = _get_spy_price_and_dividend_yield(auto_adjust=True)
-    _build_and_save_spy_with_div_and_funding(
-        spy_price_adj, div_yield_adj, treasury_3mo_df, output_filename="SPY_yfinance_adj.csv", minimal_columns=True
-    )
+    # NVDA_yfinance, AAPL_yfinance, ... : multiple_prices_csv (unadj), adjusted_prices_csv (adj)
+    multi_dir = _multiple_prices_dir()
+    adj_dir = _adjusted_prices_dir()
+    for symbol in YFINANCE_TICKERS:
+        code = symbol + YFINANCE_INSTRUMENT_SUFFIX
+        unadj_path = os.path.join(multi_dir, "%s.csv" % code)
+        adj_path = os.path.join(adj_dir, "%s.csv" % code)
+        if not os.path.isfile(unadj_path):
+            price_unadj, div_unadj = _get_ticker_price_and_dividend_yield(symbol, auto_adjust=False)
+            _build_and_save_with_div_and_funding(
+                price_unadj, div_unadj, treasury_3mo_df, unadj_path, minimal_columns=False
+            )
+        if not os.path.isfile(adj_path):
+            price_adj, div_adj = _get_ticker_price_and_dividend_yield(symbol, auto_adjust=True)
+            _build_and_save_with_div_and_funding(
+                price_adj, div_adj, treasury_3mo_df, adj_path, minimal_columns=True
+            )
 
 
 if __name__ == "__main__":
