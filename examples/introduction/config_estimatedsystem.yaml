@@ -7,15 +7,11 @@ end_date: "2024-03-28"
 use_bbg: False
 
 # Optional: override portfolio instruments (default from futuresestimateconfig.yaml).
-# Uncomment and edit to change; when use_bbg: true, _BBG suffix is appended in code.
-instruments:
-  [NVDA_yfinance, 
-  AAPL_yfinance, 
-  MSFT_yfinance, 
-  AMZN_yfinance, 
-  META_yfinance, 
-  TSLA_yfinance, 
-  GOOGL_yfinance]
+# When use_bbg: true, _BBG suffix is appended in code.
+# When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
+instruments_from_csv: "data/anson/S&P_500_component_stocks.csv"
+instruments_column: "Symbol"
+instruments_suffix: "_yfinance"
 
 bnh_instruments:
   ['SP500',

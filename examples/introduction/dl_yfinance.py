@@ -3,18 +3,33 @@ Download market data and simple metrics via yfinance and Fed (FRED).
 
 Outputs:
   - data/anson/GSPC.csv, SPY_yfinance_unadj.csv, SPY_yfinance_adj.csv
-  - data/futures/multiple_prices_csv/{CODE}.csv (unadj) and adjusted_prices_csv/{CODE}.csv (adj) for NVDA_yfinance, AAPL_yfinance, MSFT_yfinance, AMZN_yfinance, META_yfinance, TSLA_yfinance, GOOGL_yfinance
+  - data/futures/multiple_prices_csv/{CODE}.csv (unadj) and adjusted_prices_csv/{CODE}.csv (adj) for all symbols in instruments CSV (code = symbol + _yfinance).
 
+Instruments list: data/anson/S&P_500_component_stocks.csv, column Symbol. Add _yfinance suffix for instrument code.
 If an output file already exists, that file is not re-fetched or overwritten.
 """
 
 import os
+import time
 
 import pandas as pd
 import yfinance as yf
 
-YFINANCE_TICKERS = ["NVDA", "AAPL", "MSFT", "AMZN", "META", "TSLA", "GOOGL"]
+INSTRUMENTS_CSV = "data/anson/S&P_500_component_stocks.csv"
+DELAY_BETWEEN_TICKERS_SEC = 0.25
+INSTRUMENTS_COLUMN = "Symbol"
 YFINANCE_INSTRUMENT_SUFFIX = "_yfinance"
+
+
+def _get_tickers_from_csv():
+    """Read symbol column from instruments CSV; return list of ticker strings (e.g. ['MMM', 'AOS', ...])."""
+    path = os.path.join(_repo_root(), INSTRUMENTS_CSV.replace("/", os.sep))
+    if not os.path.isfile(path):
+        return []
+    df = pd.read_csv(path)
+    if INSTRUMENTS_COLUMN not in df.columns:
+        return []
+    return df[INSTRUMENTS_COLUMN].astype(str).str.strip().dropna().unique().tolist()
 
 
 def _repo_root() -> str:
@@ -59,9 +74,14 @@ def _download_price_series(symbol: str, filename: str, out_dir: str = None) -> N
     print("  Range: %s to %s" % (df.index[0], df.index[-1]))
 
 
+def _yfinance_ticker_symbol(symbol: str) -> str:
+    """Convert symbol for yfinance (e.g. BRK.B -> BRK-B)."""
+    return symbol.replace(".", "-")
+
+
 def _get_ticker_price_and_dividend_yield(symbol: str, auto_adjust: bool = False):
     """Return (price_df, div_yield_series). Div yield truncated to drop first 365 days."""
-    ticker = yf.Ticker(symbol)
+    ticker = yf.Ticker(_yfinance_ticker_symbol(symbol))
     px = ticker.history(period="max", auto_adjust=auto_adjust)
     if px.empty:
         return None, pd.Series(dtype=float)
@@ -182,10 +202,13 @@ def main() -> None:
             spy_price_adj, div_yield_adj, treasury_3mo_df, spy_adj_path, minimal_columns=True
         )
 
-    # NVDA_yfinance, AAPL_yfinance, ... : multiple_prices_csv (unadj), adjusted_prices_csv (adj)
+    # All symbols from instruments CSV: multiple_prices_csv (unadj), adjusted_prices_csv (adj), code = symbol + _yfinance
+    yfinance_tickers = _get_tickers_from_csv()
+    if not yfinance_tickers:
+        print("No tickers from %s (column %s), skipping." % (INSTRUMENTS_CSV, INSTRUMENTS_COLUMN))
     multi_dir = _multiple_prices_dir()
     adj_dir = _adjusted_prices_dir()
-    for symbol in YFINANCE_TICKERS:
+    for symbol in yfinance_tickers:
         code = symbol + YFINANCE_INSTRUMENT_SUFFIX
         unadj_path = os.path.join(multi_dir, "%s.csv" % code)
         adj_path = os.path.join(adj_dir, "%s.csv" % code)
@@ -199,6 +222,7 @@ def main() -> None:
             _build_and_save_with_div_and_funding(
                 price_adj, div_adj, treasury_3mo_df, adj_path, minimal_columns=True
             )
+        time.sleep(DELAY_BETWEEN_TICKERS_SEC)
 
 
 if __name__ == "__main__":

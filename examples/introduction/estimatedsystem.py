@@ -69,6 +69,18 @@ config = Config([
     "examples.introduction.config_estimatedsystem.yaml",
 ])
 _repo_root = os.path.dirname(os.path.dirname(_script_dir))
+
+# Load instruments from CSV if configured (symbols get suffix, e.g. MMM -> MMM_yfinance)
+_csv_path = config.get_element_or_default("instruments_from_csv", None)
+if _csv_path:
+    _full_csv = os.path.join(_repo_root, _csv_path.replace("/", os.sep))
+    if os.path.isfile(_full_csv):
+        _col = config.get_element_or_default("instruments_column", "Symbol")
+        _suffix = config.get_element_or_default("instruments_suffix", "_yfinance")
+        _df = pd.read_csv(_full_csv)
+        _symbols = _df[_col].astype(str).str.strip().dropna().unique().tolist()
+        config.instruments = [s + _suffix for s in _symbols]
+
 if config.get_element_or_default("use_bbg", False):
     # Append _BBG suffix to every instrument code so the system loads *_BBG.csv files
     config.instruments = [code + "_BBG" for code in config.instruments]
