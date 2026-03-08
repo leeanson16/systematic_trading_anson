@@ -1,14 +1,13 @@
 # config for introduction estimated system
-start_date: "1993-01-29" #1972 1984 1993-01-29
+start_date: "1984-01-01" #1972 1984 1993-01-29
 end_date: "2024-03-28"
 
 # Set to true to use BBG data files (instrument code + "_BBG" suffix, e.g. SOFR_BBG.csv).
 # Files may cover a shorter period than instrument_periods below — that is fine.
 use_bbg: True
-
-# Expected data periods per instrument (informational; files may have less data).
-# Use base instrument names here; _BBG suffix is appended in code when use_bbg: True.
-instrument_periods_may_have_bbg_suffix:
+# Optional: override portfolio instruments (default from futuresestimateconfig.yaml).
+# Uncomment and edit to change; when use_bbg: true, _BBG suffix is appended in code.
+instruments:
   SOFR:    {start: "1984-03-23", end: "2024-03-28"}
   US10:    {start: "1982-08-30", end: "2024-03-28"}
   EUROSTX: {start: "2014-03-13", end: "2024-03-28"}
@@ -16,9 +15,9 @@ instrument_periods_may_have_bbg_suffix:
   CORN:    {start: "1972-10-18", end: "2024-03-28"}
   V2X:     {start: "2013-01-02", end: "2024-03-28"}
 
-instrument_periods:
-  SP500:            {start: "1982-09-14", end: "2024-03-28"}
-  SPY_yfinance:     {start: "1993-01-29", end: "2024-03-28"} #1972-10-18 1993-01-29
+bnh_instruments:
+  ['SP500',
+  'SPY_yfinance']
 
 Notes: |
   Data periods (BBG):

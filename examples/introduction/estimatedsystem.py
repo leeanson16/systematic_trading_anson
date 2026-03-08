@@ -142,6 +142,33 @@ def _bh_curve_for_instrument(system, code):
     )
     return accountCurve(pandl_calc)
 
+def _bh_curve_all_in(system, code):
+    """All-in B&H for a single instrument: always full vol-targeted size at subsystem level, roll-cost net."""
+    price = system.accounts.get_instrument_prices_for_position_or_forecast(code)
+    avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
+    positions = avg_pos.reindex(price.index).ffill().fillna(0.0)
+
+    raw_costs = system.accounts.get_raw_cost_data(code)
+    fx = system.accounts.get_fx_rate(code)
+    value_per_point = system.accounts.get_value_of_block_price_move(code)
+    capital = system.accounts.get_notional_capital()
+    rolls_per_year = system.accounts.get_rolls_per_year(code)
+    vol_normalise_currency_costs = system.config.vol_normalise_currency_costs
+    multiply_roll_costs_by = system.config.multiply_roll_costs_by
+
+    pandl_calc = pandlCalculationWithCashCostsAndFills(
+        price,
+        raw_costs=raw_costs,
+        positions=positions,
+        capital=capital,
+        value_per_point=value_per_point,
+        fx=fx,
+        rolls_per_year=rolls_per_year,
+        vol_normalise_currency_costs=vol_normalise_currency_costs,
+        multiply_roll_costs_by=multiply_roll_costs_by,
+    )
+    return accountCurve(pandl_calc)
+
 def _build_bh_stats(curve_or_returns, label):
     """Build stats + geo drawdown from an accountCurve or decimal daily returns series."""
     if isinstance(curve_or_returns, accountCurve):
@@ -201,28 +228,6 @@ bh_pct_sum = pct_returns_df.sum(axis=1, min_count=1)
 bh_pct_returns = bh_pct_sum.dropna() / 100
 _, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date = _build_bh_stats(bh_pct_returns, "B&H")
 
-# SP500 B&H: clipped to SP500's own instrument_period (if defined), else global bounds
-sp500_c = _bh_curve_for_instrument(system, "SP500")
-sp500_returns = pd.Series(sp500_c.percent.values, index=sp500_c.percent.index)
-sp500_eff_start, sp500_eff_end = _instr_window("SP500")
-if sp500_eff_start is not None:
-    sp500_returns = sp500_returns.loc[sp500_returns.index >= sp500_eff_start]
-if sp500_eff_end is not None:
-    sp500_returns = sp500_returns.loc[sp500_returns.index <= sp500_eff_end]
-sp500_returns_dec = sp500_returns.dropna() / 100
-_, sp500_stats_obj, sp500_geo_dd, sp500_peak_date, sp500_trough_date = _build_bh_stats(sp500_returns_dec, "SP500 B&H")
-
-# SPY B&H: uses instrument SPY_yfinance (data/futures/adjusted_prices_csv/SPY_yfinance.csv)
-spy_c = _bh_curve_for_instrument(system, "SPY_yfinance")
-spy_returns = pd.Series(spy_c.percent.values, index=spy_c.percent.index)
-spy_eff_start, spy_eff_end = _instr_window("SPY_yfinance")
-if spy_eff_start is not None:
-    spy_returns = spy_returns.loc[spy_returns.index >= spy_eff_start]
-if spy_eff_end is not None:
-    spy_returns = spy_returns.loc[spy_returns.index <= spy_eff_end]
-spy_returns_dec = spy_returns.dropna() / 100
-_, spy_stats_obj, spy_geo_dd, spy_peak_date, spy_trough_date = _build_bh_stats(spy_returns_dec, "SPY B&H")
-
 def _period_str(ix):
     if ix is None or len(ix) == 0:
         return "n/a"
@@ -257,9 +262,19 @@ with open(log_path, "w") as f:
     f.write("\nB&H percent stats:\n")
     f.write("  Data period: %s\n" % _period_str(bh_pct_returns.index))
     _write_stats(f, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date)
-    f.write("\nSP500 B&H percent stats:\n")
-    f.write("  Data period: %s\n" % _period_str(sp500_returns.index))
-    _write_stats(f, sp500_stats_obj, sp500_geo_dd, sp500_peak_date, sp500_trough_date)
-    f.write("\nSPY B&H percent stats:\n")
-    f.write("  Data period: %s\n" % _period_str(spy_returns.index))
-    _write_stats(f, spy_stats_obj, spy_geo_dd, spy_peak_date, spy_trough_date)
+    bnh_list = config.get_element_or_default("bnh_instruments", []) or []
+    if bnh_list:
+        f.write("\nB&H benchmarks (all-in, full vol-targeted):\n")
+        for code in bnh_list:
+            bh_curve = _bh_curve_all_in(system, code)
+            bh_series = pd.Series(bh_curve.percent.values, index=bh_curve.percent.index)
+            eff_start, eff_end = _instr_window(code)
+            if eff_start is not None:
+                bh_series = bh_series.loc[bh_series.index >= eff_start]
+            if eff_end is not None:
+                bh_series = bh_series.loc[bh_series.index <= eff_end]
+            bh_dec = bh_series.dropna() / 100
+            _, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh = _build_bh_stats(bh_dec, f"{code} B&H")
+            f.write("\n%s B&H percent stats:\n" % code)
+            f.write("  Data period: %s\n" % _period_str(bh_series.index))
+            _write_stats(f, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh)
