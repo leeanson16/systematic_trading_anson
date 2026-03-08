@@ -79,12 +79,12 @@ if config.get_element_or_default("use_bbg", False):
             if _f.endswith("_BBG.csv"):
                 _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
 
-# Preprocess *_yfinance.csv (e.g. SPY_yfinance): mm/dd/yyyy -> yyyy-mm-dd in-place
+# Preprocess *_yfinance.csv and *_yfinance_unadj.csv: mm/dd/yyyy -> yyyy-mm-dd in-place
 for _subdir in ("adjusted_prices_csv", "multiple_prices_csv"):
     _data_dir = os.path.join(_repo_root, "data", "futures", _subdir)
     if os.path.isdir(_data_dir):
         for _f in os.listdir(_data_dir):
-            if _f.endswith("_yfinance.csv"):
+            if _f.endswith("_yfinance.csv") or _f.endswith("_yfinance_unadj.csv") or _f.endswith("_yfinance_adj.csv"):
                 _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
 
 # SPY.csv in data/futures/adjusted_prices_csv is loaded by default data

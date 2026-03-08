@@ -428,6 +428,8 @@ SP400,E-mini S&P Midcap 400 Futures,100,USD,Equity,2.25,0,0,US
 SP500,US equity index S&P500,50,USD,Equity,2.25,0,0,US
 SPY,SPDR S&P 500 ETF,1,USD,Equity,0,0,0,US
 SPY_yfinance,SPDR S&P 500 ETF (yfinance),1,USD,Equity,0,0,0,US
+SPY_yfinance_unadj,SPDR S&P 500 ETF (yfinance unadjusted),1,USD,Equity,0,0,0,US
+SPY_yfinance_adj,SPDR S&P 500 ETF (yfinance adjusted),1,USD,Equity,0,0,0,US
 SP500_micro,S&P 500 micro,5,USD,Equity,0.62,0,0,US
 SP500_mini,E-mini S&P 500 ESG,500,USD,Equity,0,0,0,US
 SP500-GROWTH,S&P 500 / Citigroup Growth Index,250,USD,Equity,0.85,0,0,US

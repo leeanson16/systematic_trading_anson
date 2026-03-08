@@ -1,0 +1,112 @@
+estimatedsystem.py run at 2026-03-08T18:27:49.277226
+
+Data period: 1984-01-03 to 2024-03-28
+
+Sharpe: 0.5951
+
+Percent stats:
+  Daily:
+    min: -38.22
+    max: 17.4
+    median: 0.0271
+    mean: 0.04754
+    std: 1.278
+    skew: -2.483
+  ann_mean: 12.17
+  ann_std: 20.45
+  sharpe: 0.5951
+  sortino: 0.7072
+  avg_drawdown: -17.31
+  geometric_worst_drawdown: -55.08 (peak: 1988-06-27, trough: 1991-07-29)
+  time_in_drawdown: 0.9559
+  calmar: 0.1596
+  avg_return_to_drawdown: 0.7029
+  avg_loss: -0.8272
+  avg_gain: 0.8369
+  gaintolossratio: 1.012
+  profitfactor: 1.124
+  hitrate: 0.5262
+  t_stat: 3.811
+  p_value: 0.0001392
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+B&H percent stats:
+  Data period: 1984-01-03 to 2024-03-28
+  Daily:
+    min: -8.694
+    max: 5.244
+    median: 0.02494
+    mean: 0.03139
+    std: 1.113
+    skew: -0.1886
+  ann_mean: 8.037
+  ann_std: 17.81
+  sharpe: 0.4513
+  sortino: 0.6616
+  avg_drawdown: -15.05
+  geometric_worst_drawdown: -55.29 (peak: 2012-09-03, trough: 2018-11-08)
+  time_in_drawdown: 0.9566
+  calmar: 0.1117
+  avg_return_to_drawdown: 0.5339
+  avg_loss: -0.8232
+  avg_gain: 0.8475
+  gaintolossratio: 1.03
+  profitfactor: 1.078
+  hitrate: 0.5115
+  t_stat: 2.89
+  p_value: 0.003861
+
+B&H benchmarks (all-in, full vol-targeted):
+
+SP500 B&H percent stats:
+  Data period: 1984-01-03 to 2024-03-28
+  Daily:
+    min: -21.53
+    max: 5.772
+    median: 0.05637
+    mean: 0.04259
+    std: 1.372
+    skew: -1.005
+  ann_mean: 10.9
+  ann_std: 21.95
+  sharpe: 0.4966
+  sortino: 0.6341
+  avg_drawdown: -19.46
+  geometric_worst_drawdown: -63.64 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9452
+  calmar: 0.1196
+  avg_return_to_drawdown: 0.5602
+  avg_loss: -0.9777
+  avg_gain: 0.9931
+  gaintolossratio: 1.016
+  profitfactor: 1.09
+  hitrate: 0.5177
+  t_stat: 3.18
+  p_value: 0.001475
+
+SPY_yfinance B&H percent stats:
+  Data period: 1984-01-03 to 2024-03-28
+  Daily:
+    min: -16.67
+    max: 5.426
+    median: 0.0595
+    mean: 0.06878
+    std: 1.383
+    skew: -0.6804
+  ann_mean: 17.61
+  ann_std: 22.13
+  sharpe: 0.7958
+  sortino: 1.056
+  avg_drawdown: -13.48
+  geometric_worst_drawdown: -58.41 (peak: 1999-12-31, trough: 2003-03-11)
+  time_in_drawdown: 0.9196
+  calmar: 0.2225
+  avg_return_to_drawdown: 1.306
+  avg_loss: -0.9848
+  avg_gain: 1.036
+  gaintolossratio: 1.052
+  profitfactor: 1.146
+  hitrate: 0.5215
+  t_stat: 5.096
+  p_value: 3.524e-07
