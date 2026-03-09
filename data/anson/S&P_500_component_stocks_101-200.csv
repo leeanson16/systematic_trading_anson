@@ -1,0 +1,101 @@
+﻿Symbol,Security,GICS Sector,GICS Sub-Industry,Headquarters Location,Date added,CIK,Founded
+CMCSA,Comcast,Communication Services,Cable & Satellite,"Philadelphia, Pennsylvania",37579,1166691,1963
+CME,CME Group,Financials,Financial Exchanges & Data,"Chicago, Illinois",38940,1156375,1848
+SBUX,Starbucks,Consumer Discretionary,Restaurants,"Seattle, Washington",36684,829224,1971
+MCK,McKesson Corporation,Health Care,Health Care Distributors,"Irving, Texas",36173,927653,1833
+MO,Altria,Consumer Staples,Tobacco,"Richmond, Virginia",20883,764180,1985
+SO,Southern Company,Utilities,Electric Utilities,"Atlanta, Georgia",20883,92122,1945
+CRWD,CrowdStrike,Information Technology,Systems Software,"Austin, Texas",45467,1535527,2011
+NOC,Northrop Grumman,Industrials,Aerospace & Defense,"West Falls Church, Virginia[3]",20883,1133421,"1994 (Northrop 1939, Grumman 1930)"
+BSX,Boston Scientific,Health Care,Health Care Equipment,"Marlborough, Massachusetts",34754,885725,1979
+GLW,Corning Inc.,Information Technology,Electronic Components,"Corning, New York",34757,24741,1851
+DUK,Duke Energy,Utilities,Electric Utilities,"Charlotte, North Carolina",27941,1326160,1904
+HWM,Howmet Aerospace,Industrials,Aerospace & Defense,"Pittsburgh, Pennsylvania",42664,4281,1888
+WM,Waste Management,Industrials,Environmental & Facilities Services,"Houston, Texas",36038,823768,1968
+CVS,CVS Health,Health Care,Health Care Services,"Woonsocket, Rhode Island",20883,64803,1996
+GD,General Dynamics,Industrials,Aerospace & Defense,"Reston, Virginia",20883,40533,1899
+DELL,Dell Technologies,Information Technology,"Technology Hardware, Storage & Peripherals","Round Rock, Texas",45558,1571996,2016
+ICE,Intercontinental Exchange,Financials,Financial Exchanges & Data,"Atlanta, Georgia",39351,1571949,2000
+TT,Trane Technologies,Industrials,Building Products,"Dublin, Ireland",40499,1466258,1871
+EQIX,Equinix,Real Estate,Data Center REITs,"Redwood City, California",42083,1101239,1998
+ADP,Automatic Data Processing,Industrials,Human Resource & Employment Services,"Roseland, New Jersey",29676,8670,1949
+WMB,Williams Companies,Energy,Oil & Gas Storage & Transportation,"Tulsa, Oklahoma",27484,107263,1908
+MRSH,Marsh McLennan,Financials,Insurance Brokers,"New York City, New York",32020,62709,1905
+AMT,American Tower,Real Estate,Telecom Tower REITs,"Boston, Massachusetts",39405,1053507,1995
+UPS,United Parcel Service,Industrials,Air Freight & Logistics,"Sandy Springs, Georgia",37459,1090727,1907
+MAR,Marriott International,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Bethesda, Maryland",35944,1048286,1927
+FCX,Freeport-McMoRan,Materials,Copper,"Phoenix, Arizona",40725,831259,1912
+FDX,FedEx,Industrials,Air Freight & Logistics,"Memphis, Tennessee",29586,1048911,1971
+NKE,"Nike, Inc.",Consumer Discretionary,"Apparel, Accessories & Luxury Goods","Washington County, Oregon",32477,320187,1964
+SNPS,Synopsys,Information Technology,Application Software,"Sunnyvale, California",42810,883241,1986
+MCO,Moody's Corporation,Financials,Financial Exchanges & Data,"New York City, New York",35977,1059556,1909
+WDC,Western Digital,Information Technology,"Technology Hardware, Storage & Peripherals","San Jose, California",39995,106040,1970
+PNC,PNC Financial Services,Financials,Diversified Banks,"Pittsburgh, Pennsylvania",32263,713676,1845
+CDNS,Cadence Design Systems,Information Technology,Application Software,"San Jose, California",42996,813672,1988
+SHW,Sherwin-Williams,Materials,Specialty Chemicals,"Cleveland, Ohio",23558,89800,1866
+KKR,KKR & Co.,Financials,Asset Management & Custody Banks,"New York City, New York",45467,1404912,1976
+CTAS,Cintas,Industrials,Diversified Support Services,"Mason, Ohio",36951,723254,1929
+USB,U.S. Bancorp,Financials,Diversified Banks,"Minneapolis, Minnesota",36465,36104,1968
+JCI,Johnson Controls,Industrials,Building Products,"Cork, Ireland",40417,833444,1885
+PWR,Quanta Services,Industrials,Construction & Engineering,"Houston, Texas",39995,1050915,1997
+MMM,3M,Industrials,Industrial Conglomerates,"Saint Paul, Minnesota",20883,66740,1902
+REGN,Regeneron Pharmaceuticals,Health Care,Biotechnology,"Tarrytown, New York",41395,872589,1988
+ITW,Illinois Tool Works,Industrials,Industrial Machinery & Supplies & Components,"Glenview, Illinois",31471,49826,1912
+ABNB,Airbnb,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","San Francisco, California",45187,1559720,2008
+ECL,Ecolab,Materials,Specialty Chemicals,"Saint Paul, Minnesota",32539,31462,1923
+ORLY,O’Reilly Automotive,Consumer Discretionary,Automotive Retail,"Springfield, Missouri",39899,898173,1957
+BK,BNY Mellon,Financials,Asset Management & Custody Banks,"New York City, New York",34789,1390777,1784
+STX,Seagate Technology,Information Technology,"Technology Hardware, Storage & Peripherals","Dublin, Ireland",41092,1137789,1979
+DASH,DoorDash,Consumer Discretionary,Specialized Consumer Services,"San Francisco, California",45740,1792789,2012
+SNDK,Sandisk,Information Technology,"Technology Hardware, Storage & Peripherals","Milpitas, California",45989,2023554,1988
+EMR,Emerson Electric,Industrials,Electrical Components & Equipment,"Ferguson, Missouri",23832,32604,1890
+MSI,Motorola Solutions,Information Technology,Communications Equipment,"Chicago, Illinois",20883,68505,1928 (2011)
+RCL,Royal Caribbean Group,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Miami, Florida",41978,884887,1997
+CL,Colgate-Palmolive,Consumer Staples,Household Products,"New York City, New York",20883,21665,1806
+MDLZ,Mondelez International,Consumer Staples,Packaged Foods & Meats,"Chicago, Illinois",41184,1103982,2012
+KMI,Kinder Morgan,Energy,Oil & Gas Storage & Transportation,"Houston, Texas",41054,1506307,1997
+CMI,Cummins,Industrials,Construction Machinery & Heavy Transportation Equipment,"Columbus, Indiana",23832,26172,1919
+CSX,CSX Corporation,Industrials,Rail Transportation,"Jacksonville, Florida",20883,277948,1980
+MNST,Monster Beverage,Consumer Staples,Soft Drinks & Non-alcoholic Beverages,"Corona, California",41088,865752,2012 (1935)
+TDG,TransDigm Group,Industrials,Aerospace & Defense,"Cleveland, Ohio",42524,1260221,1993
+AON,Aon plc,Financials,Insurance Brokers,"London, United Kingdom",35178,315293,1982 (1919)
+CI,Cigna,Health Care,Health Care Services,"Bloomfield, Connecticut",27941,1739940,1982
+RSG,Republic Services,Industrials,Environmental & Facilities Services,"Phoenix, Arizona",39787,1060391,1998 (1981)
+AEP,American Electric Power,Utilities,Electric Utilities,"Columbus, Ohio",20883,4904,1906
+CRH,CRH plc,Materials,Construction Materials,"Dublin, Ireland",46013,849395,1970
+EOG,EOG Resources,Energy,Oil & Gas Exploration & Production,"Houston, Texas",36832,821189,1999
+SLB,Schlumberger,Energy,Oil & Gas Equipment & Services,"Houston, Texas",20883,87347,1926
+COR,Cencora,Health Care,Health Care Distributors,"Conshohocken, Pennsylvania",37133,1140859,1985
+HOOD,Robinhood Markets,Financials,Investment Banking & Brokerage,"Menlo Park, California",45922,1783879,2013
+WBD,Warner Bros. Discovery,Communication Services,Broadcasting,"New York City, New York",44662,1437107,2022 (Warner Bros. 1923)
+ROST,Ross Stores,Consumer Discretionary,Apparel Retail,"Dublin, California",40168,745732,1982
+HLT,Hilton Worldwide,Consumer Discretionary,"Hotels, Resorts & Cruise Lines","Tysons Corner, Virginia",42905,1585689,1919
+LHX,L3Harris,Industrials,Aerospace & Defense,"Melbourne, Florida",39713,202058,"2019 (L3 1997, Harris 1895)"
+NSC,Norfolk Southern,Industrials,Rail Transportation,"Atlanta, Georgia",20883,702165,1881/1894 (1980)
+GM,General Motors,Consumer Discretionary,Automobile Manufacturers,"Detroit, Michigan",41431,1467858,1908
+VLO,Valero Energy,Energy,Oil & Gas Refining & Marketing,"San Antonio, Texas",37610,1035002,1980
+PSX,Phillips 66,Energy,Oil & Gas Refining & Marketing,"Houston, Texas",41030,1534701,2012 (1917)
+TRV,Travelers Companies (The),Financials,Property & Casualty Insurance,"New York City, New York",37489,86312,1853
+MPC,Marathon Petroleum,Energy,Oil & Gas Refining & Marketing,"Findlay, Ohio",40725,1510295,2009 (1887)
+ELV,Elevance Health,Health Care,Managed Health Care,"Indianapolis, Indiana",37462,1156039,2014 (1946)
+PCAR,Paccar,Industrials,Construction Machinery & Heavy Transportation Equipment,"Bellevue, Washington",29586,75362,1905
+SPG,Simon Property Group,Real Estate,Retail REITs,"Indianapolis, Indiana",37433,1063761,2003
+APO,Apollo Global Management,Financials,Asset Management & Custody Banks,"New York City, New York",45649,1858681,1990
+FTNT,Fortinet,Information Technology,Systems Software,"Sunnyvale, California",43384,1262039,2000
+O,Realty Income,Real Estate,Retail REITs,"San Diego, California",42101,726728,1969
+APD,Air Products,Materials,Industrial Gases,"Upper Macungie Township, Pennsylvania",31167,2969,1940
+DLR,Digital Realty,Real Estate,Data Center REITs,"Austin, Texas",42508,1297996,2004
+SRE,Sempra,Utilities,Multi-Utilities,"San Diego, California",42811,1032208,1998
+TEL,TE Connectivity,Information Technology,Electronic Manufacturing Services,"Galway, Ireland",40833,1385157,2007
+AZO,AutoZone,Consumer Discretionary,Automotive Retail,"Memphis, Tennessee",35432,866787,1979
+BKR,Baker Hughes,Energy,Oil & Gas Equipment & Services,"Houston, Texas",42923,1701605,2017
+AJG,Arthur J. Gallagher & Co.,Financials,Insurance Brokers,"Rolling Meadows, Illinois",42521,354190,1927
+TFC,Truist Financial,Financials,Diversified Banks,"Charlotte, North Carolina",35768,92230,1872
+AFL,Aflac,Financials,Life & Health Insurance,"Columbus, Georgia",36308,4977,1955
+D,Dominion Energy,Utilities,Multi-Utilities,"Richmond, Virginia",42704,715957,1983
+L,Loews Corporation,Financials,Multi-line Insurance,"New York City, New York",34850,60086,1959
+ALL,Allstate,Financials,Property & Casualty Insurance,"Northbrook, Illinois",34893,899051,1931
+ADSK,Autodesk,Information Technology,Application Software,"San Francisco, California",32843,769397,1982
+OKE,Oneok,Energy,Oil & Gas Storage & Transportation,"Tulsa, Oklahoma",40252,1039684,1906
+TGT,Target Corporation,Consumer Staples,Consumer Staples Merchandise Retail,"Minneapolis, Minnesota",28125,27419,1902
+PSA,Public Storage,Real Estate,Self-Storage REITs,"Glendale, California",38583,1393311,1972

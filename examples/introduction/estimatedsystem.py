@@ -64,6 +64,9 @@ _run_ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 log_path = os.path.join(results_dir, "es_%s.log" % _run_ts)
 plot_path = os.path.join(results_dir, "portfolio_curve_%s.png" % _run_ts)
 
+import time as _time
+_wall_start = _time.perf_counter()
+
 config = Config([
     "systems.provided.futures_chapter15.futuresestimateconfig.yaml",
     "examples.introduction.config_estimatedsystem.yaml",
@@ -78,7 +81,7 @@ if _csv_path:
         _col = config.get_element_or_default("instruments_column", "Symbol")
         _suffix = config.get_element_or_default("instruments_suffix", "_yfinance")
         _df = pd.read_csv(_full_csv)
-        _symbols = _df[_col].astype(str).str.strip().dropna().unique().tolist()
+        _symbols = _df[_col].astype(str).str.strip().str.replace(".", "-", regex=False).dropna().unique().tolist()
         config.instruments = [s + _suffix for s in _symbols]
 
 if config.get_element_or_default("use_bbg", False):
@@ -291,3 +294,16 @@ with open(log_path, "w") as f:
             f.write("\n%s B&H percent stats:\n" % code)
             f.write("  Data period: %s\n" % _period_str(bh_series.index))
             _write_stats(f, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh)
+    _iw = system.portfolio.get_instrument_weights()
+    _iw_last = _iw.iloc[-1].sort_values(ascending=False)
+    f.write("\nEstimated instrument weights (final, descending):\n")
+    for _code, _w in _iw_last.items():
+        if _w > 1e-6:
+            f.write("  %-25s %.4f\n" % (_code, _w))
+    _iw_sum = _iw_last.sum()
+    _n_nonzero = (_iw_last > 1e-6).sum()
+    f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_iw_sum, _n_nonzero))
+
+    _wall_elapsed = _time.perf_counter() - _wall_start
+    _mins, _secs = divmod(_wall_elapsed, 60)
+    f.write("\nTotal runtime: %d min %.1f sec (%.1f sec)\n" % (_mins, _secs, _wall_elapsed))

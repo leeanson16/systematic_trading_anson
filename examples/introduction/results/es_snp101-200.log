@@ -1,0 +1,114 @@
+estimatedsystem.py run at 2026-03-09T16:38:56.668492
+
+Data period: 1994-07-12 to 2024-03-28
+
+Sharpe: -0.2553
+
+Instruments: ['ABNB_yfinance', 'ADP_yfinance', 'ADSK_yfinance', 'AEP_yfinance', 'AFL_yfinance', 'AJG_yfinance', 'ALL_yfinance', 'AMT_yfinance', 'AON_yfinance', 'APD_yfinance', 'APO_yfinance', 'AZO_yfinance', 'BKR_yfinance', 'BK_yfinance', 'BSX_yfinance', 'CDNS_yfinance', 'CI_yfinance', 'CL_yfinance', 'CMCSA_yfinance', 'CME_yfinance', 'CMI_yfinance', 'COR_yfinance', 'CRH_yfinance', 'CRWD_yfinance', 'CSX_yfinance', 'CTAS_yfinance', 'CVS_yfinance', 'DASH_yfinance', 'DELL_yfinance', 'DLR_yfinance', 'DUK_yfinance', 'D_yfinance', 'ECL_yfinance', 'ELV_yfinance', 'EMR_yfinance', 'EOG_yfinance', 'EQIX_yfinance', 'FCX_yfinance', 'FDX_yfinance', 'FTNT_yfinance', 'GD_yfinance', 'GLW_yfinance', 'GM_yfinance', 'HLT_yfinance', 'HOOD_yfinance', 'HWM_yfinance', 'ICE_yfinance', 'ITW_yfinance', 'JCI_yfinance', 'KKR_yfinance', 'KMI_yfinance', 'LHX_yfinance', 'L_yfinance', 'MAR_yfinance', 'MCK_yfinance', 'MCO_yfinance', 'MDLZ_yfinance', 'MMM_yfinance', 'MNST_yfinance', 'MO_yfinance', 'MPC_yfinance', 'MRSH_yfinance', 'MSI_yfinance', 'NKE_yfinance', 'NOC_yfinance', 'NSC_yfinance', 'OKE_yfinance', 'ORLY_yfinance', 'O_yfinance', 'PCAR_yfinance', 'PNC_yfinance', 'PSA_yfinance', 'PSX_yfinance', 'PWR_yfinance', 'RCL_yfinance', 'REGN_yfinance', 'ROST_yfinance', 'RSG_yfinance', 'SBUX_yfinance', 'SHW_yfinance', 'SLB_yfinance', 'SNDK_yfinance', 'SNPS_yfinance', 'SO_yfinance', 'SPG_yfinance', 'SRE_yfinance', 'STX_yfinance', 'TDG_yfinance', 'TEL_yfinance', 'TFC_yfinance', 'TGT_yfinance', 'TRV_yfinance', 'TT_yfinance', 'UPS_yfinance', 'USB_yfinance', 'VLO_yfinance', 'WBD_yfinance', 'WDC_yfinance', 'WMB_yfinance', 'WM_yfinance']
+
+Percent stats:
+  Daily:
+    min: -3.655e+04
+    max: 8.641
+    median: 0.05321
+    mean: -9.17
+    std: 574.6
+    skew: -62.28
+  ann_mean: -2347
+  ann_std: 9194
+  sharpe: -0.2553
+  sortino: -0.1762
+  avg_drawdown: -7.122e+04
+  geometric_worst_drawdown: -36547.33 (peak: 1994-07-26, trough: 1994-07-27)
+  time_in_drawdown: 0.9986
+  calmar: -0.0328
+  avg_return_to_drawdown: -0.03296
+  avg_loss: -20.43
+  avg_gain: 1.068
+  gaintolossratio: 0.05227
+  profitfactor: 0.05734
+  hitrate: 0.5231
+  t_stat: -1.405
+  p_value: 0.16
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -41.38
+    max: 5.019e+07
+    median: 0.1187
+    mean: 6474
+    std: 5.7e+05
+    skew: 88.03
+  ann_mean: 1.657e+06
+  ann_std: 9.12e+06
+  sharpe: 0.1817
+  sortino: 7.328e+04
+  avg_drawdown: -10.74
+  geometric_worst_drawdown: -55.90 (peak: 2007-06-04, trough: 2009-03-09)
+  time_in_drawdown: 0.8794
+  calmar: 2.267e+04
+  avg_return_to_drawdown: 1.543e+05
+  avg_loss: -1.185
+  avg_gain: 1.208e+04
+  gaintolossratio: 1.019e+04
+  profitfactor: 1.181e+04
+  hitrate: 0.5367
+  t_stat: 1
+  p_value: 0.3173
+
+B&H benchmarks (all-in, full vol-targeted):
+
+SP500 B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -11.19
+    max: 5.643
+    median: 0.06919
+    mean: 0.04642
+    std: 1.345
+    skew: -0.6068
+  ann_mean: 11.88
+  ann_std: 21.53
+  sharpe: 0.552
+  sortino: 0.7249
+  avg_drawdown: -20.17
+  geometric_worst_drawdown: -61.96 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9376
+  calmar: 0.1377
+  avg_return_to_drawdown: 0.5892
+  avg_loss: -0.9832
+  avg_gain: 0.9879
+  gaintolossratio: 1.005
+  profitfactor: 1.099
+  hitrate: 0.5224
+  t_stat: 3.038
+  p_value: 0.002389
+
+SPY_yfinance B&H percent stats:
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -9.786
+    max: 6.343
+    median: 0.06302
+    mean: 0.0633
+    std: 1.356
+    skew: -0.5546
+  ann_mean: 16.2
+  ann_std: 21.7
+  sharpe: 0.7469
+  sortino: 0.9928
+  avg_drawdown: -14
+  geometric_worst_drawdown: -54.82 (peak: 2000-03-24, trough: 2003-03-11)
+  time_in_drawdown: 0.9193
+  calmar: 0.2231
+  avg_return_to_drawdown: 1.157
+  avg_loss: -0.9805
+  avg_gain: 1.019
+  gaintolossratio: 1.039
+  profitfactor: 1.135
+  hitrate: 0.522
+  t_stat: 4.11
+  p_value: 3.996e-05
