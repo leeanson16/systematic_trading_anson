@@ -1,6 +1,6 @@
 """
 Legacy wrapper: call d_yfinance.main() to download ^GSPC, SPY and Fed funds data.
-New outputs live under pysystemtradeanson/data/anson.
+New outputs live under pysystemtradeanson/data/custom.
 """
 
 from d_yfinance import main

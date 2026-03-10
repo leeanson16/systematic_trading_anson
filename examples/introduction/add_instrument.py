@@ -7,7 +7,7 @@ Checks: data/futures/csvconfig/instrumentconfig.csv
 Action: Adds rows for any instrument found in prices but missing from config.
 
 Defaults for new instruments are set based on the _yfinance suffix convention:
-  - _yfinance stocks:  Equity, Pointsize=1, Percentage=0.0004, SpreadCost=0.01
+  - _yfinance stocks:  Equity, Pointsize=1, Percentage=0.0004, SpreadCost=0.00
   - other instruments: defaults below (edit DEFAULTS dict to change)
 
 Usage:
@@ -51,7 +51,7 @@ YFINANCE_DEFAULTS = {
         "ExpiryOffset": 0,
     },
     "spreadcosts": {
-        "SpreadCost": 0.01,
+        "SpreadCost": 0.00,
     },
 }
 

@@ -22,7 +22,6 @@ def _reformat_bbg_dates_if_needed(csv_path):
     - Reformat date column from M/D/YYYY to YYYY-MM-DD
     - Replace Excel error strings (#VALUE!, #N/A, etc.) with NaN (empty cell)
     """
-    # Read all columns as strings so we can cheaply detect what needs fixing
     df_str = pd.read_csv(csv_path, dtype=str)
     sample = df_str.iloc[0, 0]
     date_needs_fix = True
@@ -34,7 +33,6 @@ def _reformat_bbg_dates_if_needed(csv_path):
     had_errors = df_str.isin(_EXCEL_ERRORS).any().any()
     if not date_needs_fix and not had_errors:
         return
-    # Re-read with proper dtypes, converting Excel errors to NaN
     df = pd.read_csv(csv_path, na_values=_EXCEL_ERRORS, keep_default_na=True)
     if date_needs_fix:
         df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0], format="mixed").dt.strftime("%Y-%m-%d")
@@ -54,6 +52,54 @@ def _geo_worst_drawdown(returns_decimal):
     peak_date = geo_cum.loc[:trough_date][geo_cum.loc[:trough_date] >= peak_val * (1 - 1e-8)].index[-1]
     return worst_val, peak_date, trough_date
 
+
+MARGIN_COST_BP = 100.0
+FUNDING_COST_FILENAME = "FUNDING_COST.csv"
+
+
+def _gross_capital_usage_and_leverage(system, instruments, end_ts, pct_index):
+    """Gross notional exposure as proportion of capital; same date filter as system pct.
+    Returns (avg_capital_used_pct, avg_leverage, gross_proportion_series). Series is None if empty."""
+    weight_series_list = []
+    for code in instruments:
+        try:
+            w = system.portfolio.get_portfolio_weight_series_from_contract_positions(code)
+            if w is not None and len(w) > 0:
+                weight_series_list.append(pd.Series(w, name=code))
+        except Exception:
+            pass
+    if not weight_series_list:
+        return float("nan"), float("nan"), None
+    weights_df = pd.concat(weight_series_list, axis=1, join="outer")
+    weights_df = weights_df.reindex(weights_df.index.union(pct_index)).ffill()
+    gross_proportion = weights_df.abs().sum(axis=1)
+    if end_ts is not None:
+        gross_proportion = gross_proportion.loc[gross_proportion.index <= end_ts]
+    gross_proportion = gross_proportion.dropna()
+    if len(gross_proportion) == 0:
+        return float("nan"), float("nan"), None
+    avg_proportion = float(gross_proportion.mean())
+    return avg_proportion * 100.0, avg_proportion, gross_proportion
+
+
+def _margin_cost_series(gross_proportion_series: pd.Series, funding_cost_path: str, margin_bp: float = 100.0) -> pd.Series:
+    """Daily margin cost as % of capital: applied to excess (gross - 1) at rate = FUNDING_COST + margin_bp bp, annualised then daily.
+    Returns series of cost in percent (e.g. 0.05 = 5 bps per day), index aligned to gross_proportion."""
+    if gross_proportion_series is None or len(gross_proportion_series) == 0:
+        return pd.Series(dtype=float)
+    if not os.path.isfile(funding_cost_path):
+        return pd.Series(0.0, index=gross_proportion_series.index)
+    funding = pd.read_csv(funding_cost_path, index_col=0, parse_dates=True)
+    if "FUNDING_COST" not in funding.columns or funding.empty:
+        return pd.Series(0.0, index=gross_proportion_series.index)
+    funding = funding[["FUNDING_COST"]]
+    funding.index = pd.DatetimeIndex(funding.index).normalize()
+    gross_dates = pd.DatetimeIndex(gross_proportion_series.index).normalize()
+    funding = funding.reindex(gross_dates).ffill().bfill()
+    excess = np.maximum(gross_proportion_series.values - 1.0, 0.0)
+    rate_annual = funding["FUNDING_COST"].values + margin_bp / 10000.0
+    cost_decimal_daily = excess * rate_annual / 252.0
+    return pd.Series(cost_decimal_daily * 100.0, index=gross_proportion_series.index).fillna(0.0)
 
 
 # results folder under introduction/results
@@ -84,23 +130,23 @@ if _csv_path:
         _symbols = _df[_col].astype(str).str.strip().str.replace(".", "-", regex=False).dropna().unique().tolist()
         config.instruments = [s + _suffix for s in _symbols]
 
-if config.get_element_or_default("use_bbg", False):
-    # Append _BBG suffix to every instrument code so the system loads *_BBG.csv files
-    config.instruments = [code + "_BBG" for code in config.instruments]
-    # Preprocess BBG CSV files: fix M/D/YYYY dates and Excel error strings in-place
-    for _subdir in ("adjusted_prices_csv", "multiple_prices_csv"):
-        _data_dir = os.path.join(_repo_root, "data", "futures", _subdir)
-        for _f in os.listdir(_data_dir):
-            if _f.endswith("_BBG.csv"):
-                _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
-
-# Preprocess *_yfinance.csv and *_yfinance_unadj.csv: mm/dd/yyyy -> yyyy-mm-dd in-place
+# Preprocess CSV files: fix M/D/YYYY dates and Excel error strings in-place (one pass per subdir)
+_use_bbg = config.get_element_or_default("use_bbg", False)
 for _subdir in ("adjusted_prices_csv", "multiple_prices_csv"):
     _data_dir = os.path.join(_repo_root, "data", "futures", _subdir)
-    if os.path.isdir(_data_dir):
-        for _f in os.listdir(_data_dir):
-            if _f.endswith("_yfinance.csv") or _f.endswith("_yfinance_unadj.csv") or _f.endswith("_yfinance_adj.csv"):
-                _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
+    if not os.path.isdir(_data_dir):
+        continue
+    for _f in os.listdir(_data_dir):
+        if _f.endswith("_BBG.csv"):
+            if not _use_bbg:
+                continue
+        elif _f.endswith("_yfinance.csv") or _f.endswith("_yfinance_unadj.csv") or _f.endswith("_yfinance_adj.csv"):
+            pass
+        else:
+            continue
+        _reformat_bbg_dates_if_needed(os.path.join(_data_dir, _f))
+if _use_bbg:
+    config.instruments = [code + "_BBG" for code in config.instruments]
 
 # SPY.csv in data/futures/adjusted_prices_csv is loaded by default data
 system = futures_system(config=config)
@@ -118,19 +164,34 @@ if sys_end is not None:
     pct_dec = pd.Series(pct.values, index=pct.index) / 100
     pct_dec = pct_dec.loc[pct_dec.index <= sys_end]
     pct = account_curve_from_returns(pct_dec).percent
+instruments = system.get_instrument_list()
+if sys_end is None:
+    sys_end = pct.index[-1]
+# Margin cost on excess capital: rate = data/custom/FUNDING_COST.csv + 100bp, applied to (gross - 1)*capital daily
+_avg_cap_used_pct, _avg_lev, _gross_series = _gross_capital_usage_and_leverage(system, instruments, sys_end, pct.index)
+_funding_path = os.path.join(_repo_root, "data", "custom", FUNDING_COST_FILENAME)
+_gross_aligned = _gross_series.reindex(pct.index).ffill().bfill() if _gross_series is not None and len(_gross_series) > 0 else None
+_margin_cost_pct = _margin_cost_series(_gross_aligned, _funding_path, MARGIN_COST_BP)
+_margin_cost_applied = False
+if _gross_aligned is not None and _margin_cost_pct is not None and len(_margin_cost_pct) > 0:
+    _margin_aligned = _margin_cost_pct.reindex(pct.index).fillna(0.0)
+    pct_net = pd.Series(pct.values, index=pct.index) - _margin_aligned
+    pct_net = pct_net.dropna()
+    _returns_decimal = pct_net / 100.0
+    _curve_net = account_curve_from_returns(_returns_decimal)
+    pct = _curve_net.percent
+    _margin_cost_applied = True
 stats_obj = pct.stats()
 sharpe_val = next((val for name, val in (stats_obj[0] if stats_obj else []) if name == "sharpe"), float("nan"))
 sys_geo_dd, sys_peak_date, sys_trough_date = _geo_worst_drawdown(pd.Series(pct.values, index=pct.index) / 100)
 
-def _bh_curve_for_instrument(system, code):
+def _bh_curve_for_instrument(system, code, portfolio_instruments):
     """B&H accountCurve for one instrument: always long at the same vol-targeted size as the system.
     For instruments in the portfolio: vol scalar × instr weight × IDM (forecast = +10, fully long).
     For instruments not in the portfolio (e.g. SP500 benchmark): vol scalar only (all capital, IDM = 1).
     Roll costs included.
     """
     price = system.accounts.get_instrument_prices_for_position_or_forecast(code)
-    # use portfolio-level sizing if the instrument is in the system, subsystem-level otherwise
-    portfolio_instruments = system.get_instrument_list()
     if code in portfolio_instruments:
         avg_pos = system.accounts.get_average_position_for_instrument_at_portfolio_level(code)
     else:
@@ -201,9 +262,6 @@ def _build_bh_stats(curve_or_returns, label):
 # Portfolio daily return = sum of per-instrument percentage contributions (no re-weighting needed)
 start_date_str = config.get_element_or_default("start_date", None)
 bh_start = pd.Timestamp(start_date_str) if start_date_str else None
-if sys_end is None:
-    sys_end = pct.index[-1]
-instruments = system.get_instrument_list()
 
 # Per-instrument period bounds: instrument_periods_may_have_bbg_suffix (remapped when use_bbg) + instrument_periods (no suffix)
 _periods_may_bbg = config.get_element_or_default("instrument_periods_may_have_bbg_suffix", {}) or {}
@@ -224,10 +282,40 @@ def _instr_window(code):
     eff_end = min(sys_end, i_end) if (sys_end and i_end) else (sys_end or i_end)
     return eff_start, eff_end
 
+def _bh_gross_capital_usage_and_leverage(system, instruments, portfolio_instruments, end_ts):
+    """B&H gross notional (always long at avg position) as proportion of capital.
+    Returns (avg_capital_used_pct, avg_leverage, weights_df). weights_df has instruments as columns."""
+    weight_series_list = []
+    for code in instruments:
+        try:
+            if code in portfolio_instruments:
+                avg_pos = system.accounts.get_average_position_for_instrument_at_portfolio_level(code)
+            else:
+                avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
+            value_prop = system.portfolio.get_per_contract_value_as_proportion_of_capital(code)
+            value_prop = value_prop.reindex(avg_pos.index).ffill()
+            w = avg_pos * value_prop
+            if w is not None and len(w.dropna()) > 0:
+                weight_series_list.append(pd.Series(w, name=code))
+        except Exception:
+            pass
+    if not weight_series_list:
+        return float("nan"), float("nan"), None
+    weights_df = pd.concat(weight_series_list, axis=1, join="outer")
+    weights_df = weights_df.reindex(weights_df.index.union(pct.index)).ffill()
+    gross_proportion = weights_df.sum(axis=1)
+    if end_ts is not None:
+        gross_proportion = gross_proportion.loc[gross_proportion.index <= end_ts]
+    gross_proportion = gross_proportion.dropna()
+    if len(gross_proportion) == 0:
+        return float("nan"), float("nan"), None
+    avg_proportion = float(gross_proportion.mean())
+    return avg_proportion * 100.0, avg_proportion, weights_df
+
 # Build per-instrument B&H portfolio-level % contributions, each clipped to its own period
 instr_pct_list = []
 for code in instruments:
-    c = _bh_curve_for_instrument(system, code)
+    c = _bh_curve_for_instrument(system, code, instruments)
     s = pd.Series(c.percent.values, index=c.percent.index, name=code)
     eff_start, eff_end = _instr_window(code)
     if eff_start is not None:
@@ -241,6 +329,16 @@ pct_returns_df = pd.concat(instr_pct_list, axis=1, join="outer")
 bh_pct_sum = pct_returns_df.sum(axis=1, min_count=1)
 # divide by 100: percent → decimal for geo drawdown and account_curve_from_returns
 bh_pct_returns = bh_pct_sum.dropna() / 100
+_bh_avg_cap_used_pct, _bh_avg_lev, _bh_weights_df = _bh_gross_capital_usage_and_leverage(system, instruments, instruments, sys_end)
+# Margin cost on B&H excess capital (same rate: FUNDING_COST + 100bp)
+_bh_gross_series = _bh_weights_df.sum(axis=1) if _bh_weights_df is not None and len(_bh_weights_df) > 0 else None
+_bh_gross_aligned = _bh_gross_series.reindex(bh_pct_returns.index).ffill().bfill() if _bh_gross_series is not None and len(_bh_gross_series) > 0 else None
+_bh_margin_pct = _margin_cost_series(_bh_gross_aligned, _funding_path, MARGIN_COST_BP) if _funding_path else pd.Series(dtype=float)
+_bh_margin_cost_applied = False
+if _bh_gross_aligned is not None and _bh_margin_pct is not None and len(_bh_margin_pct) > 0:
+    _bh_margin_aligned = _bh_margin_pct.reindex(bh_pct_returns.index).fillna(0.0) / 100.0
+    bh_pct_returns = bh_pct_returns - _bh_margin_aligned
+    _bh_margin_cost_applied = True
 _, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date = _build_bh_stats(bh_pct_returns, "B&H")
 
 def _period_str(ix):
@@ -273,11 +371,41 @@ with open(log_path, "w") as f:
 
     f.write("Instruments: %s\n\n" % instruments)
     f.write("Percent stats:\n")
+    if _margin_cost_applied:
+        f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
     _write_stats(f, stats_obj, sys_geo_dd, sys_peak_date, sys_trough_date)
     f.write("\n  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)\n")
+    f.write("\nCapital usage (gross notional vs notional capital):\n")
+    f.write("  Average capital used: %.2f%%\n" % _avg_cap_used_pct)
+    f.write("  Average leverage: %.2fx\n" % _avg_lev)
+    _iw = system.portfolio.get_instrument_weights()
+    _iw_last = _iw.iloc[-1].sort_values(ascending=False)
+    f.write("\nEstimated instrument weights (final, descending):\n")
+    for _code, _w in _iw_last.items():
+        if _w > 1e-6:
+            f.write("  %-25s %.4f\n" % (_code, _w))
+    _iw_sum = _iw_last.sum()
+    _n_nonzero = (_iw_last > 1e-6).sum()
+    f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_iw_sum, _n_nonzero))
     f.write("\nB&H percent stats:\n")
+    if _bh_margin_cost_applied:
+        f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
     f.write("  Data period: %s\n" % _period_str(bh_pct_returns.index))
     _write_stats(f, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date)
+    f.write("\nCapital usage (gross notional vs notional capital):\n")
+    f.write("  Average capital used: %.2f%%\n" % _bh_avg_cap_used_pct)
+    f.write("  Average leverage: %.2fx\n" % _bh_avg_lev)
+    if _bh_weights_df is not None and len(_bh_weights_df) > 0:
+        _bh_last = _bh_weights_df.iloc[-1]
+        _bh_sum = _bh_last.sum()
+        if _bh_sum > 0:
+            _bh_iw_last = (_bh_last / _bh_sum).sort_values(ascending=False)
+            f.write("\nEstimated instrument weights (final, descending):\n")
+            for _code, _w in _bh_iw_last.items():
+                if _w > 1e-6:
+                    f.write("  %-25s %.4f\n" % (_code, _w))
+            _bh_n_nonzero = (_bh_iw_last > 1e-6).sum()
+            f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_bh_iw_last.sum(), _bh_n_nonzero))
     bnh_list = config.get_element_or_default("bnh_instruments", []) or []
     if bnh_list:
         f.write("\nB&H benchmarks (all-in, full vol-targeted):\n")
@@ -289,21 +417,28 @@ with open(log_path, "w") as f:
                 bh_series = bh_series.loc[bh_series.index >= eff_start]
             if eff_end is not None:
                 bh_series = bh_series.loc[bh_series.index <= eff_end]
-            bh_dec = bh_series.dropna() / 100
+            bh_series = bh_series.dropna()
+            _bnh_code_margin_applied = False
+            if len(bh_series) > 0 and _funding_path:
+                try:
+                    _bnh_avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
+                    _bnh_value_prop = system.portfolio.get_per_contract_value_as_proportion_of_capital(code)
+                    _bnh_value_prop = _bnh_value_prop.reindex(_bnh_avg_pos.index).ffill()
+                    _bnh_gross = (_bnh_avg_pos * _bnh_value_prop).reindex(bh_series.index).ffill().bfill()
+                    _bnh_margin = _margin_cost_series(_bnh_gross, _funding_path, MARGIN_COST_BP)
+                    if _bnh_margin is not None and len(_bnh_margin) > 0:
+                        _bnh_margin_aligned = _bnh_margin.reindex(bh_series.index).fillna(0.0)
+                        bh_series = bh_series - _bnh_margin_aligned
+                        _bnh_code_margin_applied = True
+                except Exception:
+                    pass
+            bh_dec = bh_series / 100
             _, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh = _build_bh_stats(bh_dec, f"{code} B&H")
             f.write("\n%s B&H percent stats:\n" % code)
+            if _bnh_code_margin_applied:
+                f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
             f.write("  Data period: %s\n" % _period_str(bh_series.index))
             _write_stats(f, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh)
-    _iw = system.portfolio.get_instrument_weights()
-    _iw_last = _iw.iloc[-1].sort_values(ascending=False)
-    f.write("\nEstimated instrument weights (final, descending):\n")
-    for _code, _w in _iw_last.items():
-        if _w > 1e-6:
-            f.write("  %-25s %.4f\n" % (_code, _w))
-    _iw_sum = _iw_last.sum()
-    _n_nonzero = (_iw_last > 1e-6).sum()
-    f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_iw_sum, _n_nonzero))
-
     _wall_elapsed = _time.perf_counter() - _wall_start
     _mins, _secs = divmod(_wall_elapsed, 60)
     f.write("\nTotal runtime: %d min %.1f sec (%.1f sec)\n" % (_mins, _secs, _wall_elapsed))

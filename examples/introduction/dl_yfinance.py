@@ -2,10 +2,11 @@
 Download market data and simple metrics via yfinance and Fed (FRED).
 
 Outputs:
-  - data/anson/GSPC.csv, SPY_yfinance_unadj.csv, SPY_yfinance_adj.csv
+  - data/custom/GSPC.csv, SPY_yfinance_unadj.csv, SPY_yfinance_adj.csv
+  - data/custom/FUNDING_COST.csv (FRED DGS3MO / 100, same source as FUNDING_COST in multiple_prices)
   - data/futures/multiple_prices_csv/{CODE}.csv (unadj) and adjusted_prices_csv/{CODE}.csv (adj) for all symbols in instruments CSV (code = symbol + _yfinance).
 
-Instruments list: data/anson/S&P_500_component_stocks.csv, column Symbol. Add _yfinance suffix for instrument code.
+Instruments list: data/custom/S&P_500_component_stocks.csv, column Symbol. Add _yfinance suffix for instrument code.
 If an output file already exists, that file is not re-fetched or overwritten.
 """
 
@@ -15,7 +16,7 @@ import time
 import pandas as pd
 import yfinance as yf
 
-INSTRUMENTS_CSV = "data/anson/S&P_500_component_stocks.csv"
+INSTRUMENTS_CSV = "data/custom/S&P_500_component_stocks.csv"
 DELAY_BETWEEN_TICKERS_SEC = 0.25
 INSTRUMENTS_COLUMN = "Symbol"
 YFINANCE_INSTRUMENT_SUFFIX = "_yfinance"
@@ -37,7 +38,7 @@ def _repo_root() -> str:
 
 
 def _out_dir() -> str:
-    path = os.path.join(_repo_root(), "data", "anson")
+    path = os.path.join(_repo_root(), "data", "custom")
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -122,6 +123,18 @@ def _download_treasury_3mo() -> pd.DataFrame:
     return df
 
 
+def _write_funding_cost_csv(rate_df: pd.DataFrame, rate_col: str = "DGS3MO") -> None:
+    """Write FUNDING_COST (rate/100) to data/custom/FUNDING_COST.csv. Same source as used in multiple_prices."""
+    date_col = "observation_date" if "observation_date" in rate_df.columns else "DATE"
+    out_path = os.path.join(_out_dir(), "FUNDING_COST.csv")
+    clean = rate_df.dropna(subset=[date_col, rate_col]).copy()
+    clean["DATETIME"] = pd.to_datetime(clean[date_col]).dt.normalize() + pd.Timedelta(hours=23)
+    clean["FUNDING_COST"] = clean[rate_col] / 100
+    out = clean[["DATETIME", "FUNDING_COST"]].set_index("DATETIME").sort_index()
+    out.to_csv(out_path)
+    print("Saved FUNDING_COST (%d rows) to %s" % (len(out), out_path))
+
+
 def _build_and_save_with_div_and_funding(
     price_df: pd.DataFrame,
     div_yield: pd.Series,
@@ -187,8 +200,9 @@ def main() -> None:
     _download_price_series("^GSPC", "GSPC.csv")
 
     treasury_3mo_df = _download_treasury_3mo()
+    _write_funding_cost_csv(treasury_3mo_df)
 
-    # SPY: data/anson, with _unadj / _adj suffix
+    # SPY: data/custom, with _unadj / _adj suffix
     spy_unadj_path = os.path.join(_out_dir(), "SPY_yfinance_unadj.csv")
     spy_adj_path = os.path.join(_out_dir(), "SPY_yfinance_adj.csv")
     if not os.path.isfile(spy_unadj_path):

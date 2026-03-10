@@ -1,0 +1,11 @@
+﻿Symbol,Security,GICS Sector,GICS Sub-Industry,Headquarters Location,Date added,CIK,Founded
+NVDA,Nvidia,Information Technology,Semiconductors,"Santa Clara, California",37225,1045810,1993
+AAPL,Apple Inc.,Information Technology,"Technology Hardware, Storage & Peripherals","Cupertino, California",30285,320193,1977
+MSFT,Microsoft,Information Technology,Systems Software,"Redmond, Washington",34486,789019,1975
+AMZN,Amazon,Consumer Discretionary,Broadline Retail,"Seattle, Washington",38674,1018724,1994
+GOOGL,Alphabet Inc. (Class A),Communication Services,Interactive Media & Services,"Mountain View, California",38810,1652044,1998
+GOOG,Alphabet Inc. (Class C),Communication Services,Interactive Media & Services,"Mountain View, California",41732,1652044,1998
+META,Meta Platforms,Communication Services,Interactive Media & Services,"Menlo Park, California",41631,1326801,2004
+AVGO,Broadcom,Information Technology,Semiconductors,"Palo Alto, California",41767,1730168,1961
+TSLA,"Tesla, Inc.",Consumer Discretionary,Automobile Manufacturers,"Austin, Texas",44186,1318605,2003
+BRK.B,Berkshire Hathaway,Financials,Multi-Sector Holdings,"Omaha, Nebraska",40225,1067983,1839

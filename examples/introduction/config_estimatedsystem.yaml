@@ -9,7 +9,7 @@ use_bbg: False
 # Optional: override portfolio instruments (default from futuresestimateconfig.yaml).
 # When use_bbg: true, _BBG suffix is appended in code.
 # When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
-instruments_from_csv: "data/anson/S&P_500_component_stocks_401-500.csv"
+instruments_from_csv: "data/custom/S&P_500_component_stocks_1-10.csv"
 instruments_column: "Symbol"
 instruments_suffix: "_yfinance"
 

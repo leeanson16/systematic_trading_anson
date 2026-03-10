@@ -1,0 +1,154 @@
+estimatedsystem.py run at 2026-03-10T15:55:22.622131
+
+Data period: 1994-07-12 to 2024-03-28
+
+Sharpe: 0.7701
+
+Instruments: ['AAPL_yfinance', 'AMZN_yfinance', 'AVGO_yfinance', 'BRK-B_yfinance', 'GOOGL_yfinance', 'GOOG_yfinance', 'META_yfinance', 'MSFT_yfinance', 'NVDA_yfinance', 'TSLA_yfinance']
+
+Percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Daily:
+    min: -17.53
+    max: 14.52
+    median: 0.0324
+    mean: 0.08618
+    std: 1.791
+    skew: -0.4417
+  ann_mean: 22.06
+  ann_std: 28.65
+  sharpe: 0.7701
+  sortino: 0.9439
+  avg_drawdown: -20.15
+  geometric_worst_drawdown: -50.47 (peak: 2007-11-06, trough: 2009-07-07)
+  time_in_drawdown: 0.9463
+  calmar: 0.3538
+  avg_return_to_drawdown: 1.095
+  avg_loss: -1.135
+  avg_gain: 1.198
+  gaintolossratio: 1.055
+  profitfactor: 1.162
+  hitrate: 0.5241
+  t_stat: 4.238
+  p_value: 2.281e-05
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 149.41%
+  Average leverage: 1.49x
+
+Estimated instrument weights (final, descending):
+  BRK-B_yfinance            0.2367
+  TSLA_yfinance             0.2367
+  GOOGL_yfinance            0.0999
+  GOOG_yfinance             0.0999
+  AAPL_yfinance             0.0750
+  META_yfinance             0.0722
+  AVGO_yfinance             0.0456
+  NVDA_yfinance             0.0456
+  MSFT_yfinance             0.0441
+  AMZN_yfinance             0.0441
+  --- total: 1.0000  (10 instruments with weight > 0)
+
+B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -7.758
+    max: 11.93
+    median: 0.09857
+    mean: 0.106
+    std: 1.527
+    skew: -0.1563
+  ann_mean: 27.14
+  ann_std: 24.44
+  sharpe: 1.111
+  sortino: 1.572
+  avg_drawdown: -10.41
+  geometric_worst_drawdown: -46.50 (peak: 2007-11-06, trough: 2008-11-20)
+  time_in_drawdown: 0.8958
+  calmar: 0.4626
+  avg_return_to_drawdown: 2.606
+  avg_loss: -1.098
+  avg_gain: 1.164
+  gaintolossratio: 1.06
+  profitfactor: 1.209
+  hitrate: 0.5327
+  t_stat: 6.112
+  p_value: 1.031e-09
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 134.13%
+  Average leverage: 1.34x
+
+Estimated instrument weights (final, descending):
+  BRK-B_yfinance            0.2914
+  TSLA_yfinance             0.1718
+  GOOG_yfinance             0.1254
+  GOOGL_yfinance            0.1242
+  AAPL_yfinance             0.0836
+  META_yfinance             0.0589
+  AMZN_yfinance             0.0376
+  MSFT_yfinance             0.0370
+  AVGO_yfinance             0.0361
+  NVDA_yfinance             0.0340
+  --- total: 1.0000  (10 instruments with weight > 0)
+
+B&H benchmarks (all-in, full vol-targeted):
+
+SP500 B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -11.19
+    max: 5.643
+    median: 0.06018
+    mean: 0.03845
+    std: 1.345
+    skew: -0.6046
+  ann_mean: 9.844
+  ann_std: 21.52
+  sharpe: 0.4574
+  sortino: 0.6012
+  avg_drawdown: -24.79
+  geometric_worst_drawdown: -67.99 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9498
+  calmar: 0.106
+  avg_return_to_drawdown: 0.3971
+  avg_loss: -0.9876
+  avg_gain: 0.9807
+  gaintolossratio: 0.993
+  profitfactor: 1.081
+  hitrate: 0.5213
+  t_stat: 2.517
+  p_value: 0.01185
+
+SPY_yfinance B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -9.805
+    max: 6.336
+    median: 0.04602
+    mean: 0.04645
+    std: 1.355
+    skew: -0.5518
+  ann_mean: 11.89
+  ann_std: 21.68
+  sharpe: 0.5484
+  sortino: 0.7299
+  avg_drawdown: -18.09
+  geometric_worst_drawdown: -59.10 (peak: 1999-07-16, trough: 2009-03-09)
+  time_in_drawdown: 0.9416
+  calmar: 0.1479
+  avg_return_to_drawdown: 0.6574
+  avg_loss: -0.9915
+  avg_gain: 1.009
+  gaintolossratio: 1.017
+  profitfactor: 1.098
+  hitrate: 0.519
+  t_stat: 3.018
+  p_value: 0.002553
+
+Total runtime: 1 min 5.4 sec (65.4 sec)

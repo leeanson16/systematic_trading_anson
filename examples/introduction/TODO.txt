@@ -1,3 +1,2 @@
-BBG source
 validate bootstrap
 data period
