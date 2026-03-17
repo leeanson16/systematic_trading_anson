@@ -168,12 +168,13 @@ instruments = system.get_instrument_list()
 if sys_end is None:
     sys_end = pct.index[-1]
 # Margin cost on excess capital: rate = data/custom/FUNDING_COST.csv + 100bp, applied to (gross - 1)*capital daily
+_apply_margin_cost = config.get_element_or_default("apply_margin_cost", True)
 _avg_cap_used_pct, _avg_lev, _gross_series = _gross_capital_usage_and_leverage(system, instruments, sys_end, pct.index)
-_funding_path = os.path.join(_repo_root, "data", "custom", FUNDING_COST_FILENAME)
+_funding_path = os.path.join(_repo_root, "data", "custom", FUNDING_COST_FILENAME) if _apply_margin_cost else None
 _gross_aligned = _gross_series.reindex(pct.index).ffill().bfill() if _gross_series is not None and len(_gross_series) > 0 else None
-_margin_cost_pct = _margin_cost_series(_gross_aligned, _funding_path, MARGIN_COST_BP)
+_margin_cost_pct = _margin_cost_series(_gross_aligned, _funding_path, MARGIN_COST_BP) if _apply_margin_cost and _funding_path else None
 _margin_cost_applied = False
-if _gross_aligned is not None and _margin_cost_pct is not None and len(_margin_cost_pct) > 0:
+if _apply_margin_cost and _gross_aligned is not None and _margin_cost_pct is not None and len(_margin_cost_pct) > 0:
     _margin_aligned = _margin_cost_pct.reindex(pct.index).fillna(0.0)
     pct_net = pd.Series(pct.values, index=pct.index) - _margin_aligned
     pct_net = pct_net.dropna()
@@ -223,6 +224,35 @@ def _bh_curve_all_in(system, code):
     price = system.accounts.get_instrument_prices_for_position_or_forecast(code)
     avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
     positions = avg_pos.reindex(price.index).ffill().fillna(0.0)
+
+    raw_costs = system.accounts.get_raw_cost_data(code)
+    fx = system.accounts.get_fx_rate(code)
+    value_per_point = system.accounts.get_value_of_block_price_move(code)
+    capital = system.accounts.get_notional_capital()
+    rolls_per_year = system.accounts.get_rolls_per_year(code)
+    vol_normalise_currency_costs = system.config.vol_normalise_currency_costs
+    multiply_roll_costs_by = system.config.multiply_roll_costs_by
+
+    pandl_calc = pandlCalculationWithCashCostsAndFills(
+        price,
+        raw_costs=raw_costs,
+        positions=positions,
+        capital=capital,
+        value_per_point=value_per_point,
+        fx=fx,
+        rolls_per_year=rolls_per_year,
+        vol_normalise_currency_costs=vol_normalise_currency_costs,
+        multiply_roll_costs_by=multiply_roll_costs_by,
+    )
+    return accountCurve(pandl_calc)
+
+
+def _bh_curve_1x_notional(system, code):
+    """1× notional buy-and-hold: position size so notional = 1 × capital at each date. Roll costs net."""
+    price = system.accounts.get_instrument_prices_for_position_or_forecast(code)
+    value_prop = system.portfolio.get_per_contract_value_as_proportion_of_capital(code)
+    value_prop = value_prop.reindex(price.index).ffill()
+    positions = (1.0 / value_prop).replace([np.inf, -np.inf], np.nan).fillna(0.0)
 
     raw_costs = system.accounts.get_raw_cost_data(code)
     fx = system.accounts.get_fx_rate(code)
@@ -333,13 +363,31 @@ _bh_avg_cap_used_pct, _bh_avg_lev, _bh_weights_df = _bh_gross_capital_usage_and_
 # Margin cost on B&H excess capital (same rate: FUNDING_COST + 100bp)
 _bh_gross_series = _bh_weights_df.sum(axis=1) if _bh_weights_df is not None and len(_bh_weights_df) > 0 else None
 _bh_gross_aligned = _bh_gross_series.reindex(bh_pct_returns.index).ffill().bfill() if _bh_gross_series is not None and len(_bh_gross_series) > 0 else None
-_bh_margin_pct = _margin_cost_series(_bh_gross_aligned, _funding_path, MARGIN_COST_BP) if _funding_path else pd.Series(dtype=float)
+_bh_margin_pct = _margin_cost_series(_bh_gross_aligned, _funding_path, MARGIN_COST_BP) if _apply_margin_cost and _funding_path else pd.Series(dtype=float)
 _bh_margin_cost_applied = False
-if _bh_gross_aligned is not None and _bh_margin_pct is not None and len(_bh_margin_pct) > 0:
+if _apply_margin_cost and _bh_gross_aligned is not None and _bh_margin_pct is not None and len(_bh_margin_pct) > 0:
     _bh_margin_aligned = _bh_margin_pct.reindex(bh_pct_returns.index).fillna(0.0) / 100.0
     bh_pct_returns = bh_pct_returns - _bh_margin_aligned
     _bh_margin_cost_applied = True
 _, bh_stats_obj, bh_geo_dd, bh_peak_date, bh_trough_date = _build_bh_stats(bh_pct_returns, "B&H")
+
+# B&H cap capital: same B&H but cap gross at 100%; when gross > 1 normalize weights so capital used = 100%
+_bh_cap_gross = _bh_gross_aligned.reindex(bh_pct_returns.index).ffill().bfill() if _bh_gross_aligned is not None else None
+_bh_cap_avg_gross_pct = None
+_bh_cap_avg_lev = None
+if _bh_cap_gross is not None and len(_bh_cap_gross) > 0:
+    _bh_cap_divisor = _bh_cap_gross.clip(lower=1.0)
+    bh_cap_returns = bh_pct_returns / _bh_cap_divisor
+    _bh_cap_capped_gross = _bh_cap_gross.clip(upper=1.0)
+    _bh_cap_avg_gross_pct = float(_bh_cap_capped_gross.mean()) * 100.0
+    _bh_cap_avg_lev = float(_bh_cap_capped_gross.mean())
+    _, bh_cap_stats_obj, bh_cap_geo_dd, bh_cap_peak_date, bh_cap_trough_date = _build_bh_stats(bh_cap_returns, "B&H cap capital")
+else:
+    bh_cap_stats_obj = bh_stats_obj
+    bh_cap_geo_dd = bh_geo_dd
+    bh_cap_peak_date = bh_peak_date
+    bh_cap_trough_date = bh_trough_date
+    bh_cap_returns = bh_pct_returns
 
 def _period_str(ix):
     if ix is None or len(ix) == 0:
@@ -381,12 +429,25 @@ with open(log_path, "w") as f:
     _iw = system.portfolio.get_instrument_weights()
     _iw_last = _iw.iloc[-1].sort_values(ascending=False)
     f.write("\nEstimated instrument weights (final, descending):\n")
+    _printed = 0
     for _code, _w in _iw_last.items():
         if _w > 1e-6:
             f.write("  %-25s %.4f\n" % (_code, _w))
+            _printed += 1
+            if _printed >= 5:
+                break
     _iw_sum = _iw_last.sum()
     _n_nonzero = (_iw_last > 1e-6).sum()
     f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_iw_sum, _n_nonzero))
+
+    # Standard transaction cost in Sharpe Ratio units (per trade) for all instruments
+    f.write("\nStandard cost in Sharpe Ratio (per trade, annualised):\n")
+    for _code in instruments:
+        try:
+            _sr_cost = system.accounts.get_SR_cost_per_trade_for_instrument(_code)
+        except Exception:
+            _sr_cost = float("nan")
+        f.write("  %-25s %.6f\n" % (_code, _sr_cost))
     f.write("\nB&H percent stats:\n")
     if _bh_margin_cost_applied:
         f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
@@ -401,16 +462,31 @@ with open(log_path, "w") as f:
         if _bh_sum > 0:
             _bh_iw_last = (_bh_last / _bh_sum).sort_values(ascending=False)
             f.write("\nEstimated instrument weights (final, descending):\n")
+            _printed = 0
             for _code, _w in _bh_iw_last.items():
                 if _w > 1e-6:
                     f.write("  %-25s %.4f\n" % (_code, _w))
+                    _printed += 1
+                    if _printed >= 5:
+                        break
             _bh_n_nonzero = (_bh_iw_last > 1e-6).sum()
             f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_bh_iw_last.sum(), _bh_n_nonzero))
+    f.write("\nB&H cap capital percent stats:\n")
+    f.write("  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)\n")
+    f.write("  Data period: %s\n" % _period_str(bh_cap_returns.index))
+    _write_stats(f, bh_cap_stats_obj, bh_cap_geo_dd, bh_cap_peak_date, bh_cap_trough_date)
+    f.write("\nCapital usage (gross notional vs notional capital):\n")
+    if _bh_cap_avg_gross_pct is not None and _bh_cap_avg_lev is not None:
+        f.write("  Average capital used: %.2f%%\n" % _bh_cap_avg_gross_pct)
+        f.write("  Average leverage: %.2fx\n" % _bh_cap_avg_lev)
+    else:
+        f.write("  Average capital used: n/a\n")
+        f.write("  Average leverage: n/a\n")
     bnh_list = config.get_element_or_default("bnh_instruments", []) or []
     if bnh_list:
-        f.write("\nB&H benchmarks (all-in, full vol-targeted):\n")
+        f.write("\nB&H benchmarks (1× notional buy-and-hold):\n")
         for code in bnh_list:
-            bh_curve = _bh_curve_all_in(system, code)
+            bh_curve = _bh_curve_1x_notional(system, code)
             bh_series = pd.Series(bh_curve.percent.values, index=bh_curve.percent.index)
             eff_start, eff_end = _instr_window(code)
             if eff_start is not None:
@@ -418,25 +494,11 @@ with open(log_path, "w") as f:
             if eff_end is not None:
                 bh_series = bh_series.loc[bh_series.index <= eff_end]
             bh_series = bh_series.dropna()
-            _bnh_code_margin_applied = False
-            if len(bh_series) > 0 and _funding_path:
-                try:
-                    _bnh_avg_pos = system.accounts.get_average_position_at_subsystem_level(code)
-                    _bnh_value_prop = system.portfolio.get_per_contract_value_as_proportion_of_capital(code)
-                    _bnh_value_prop = _bnh_value_prop.reindex(_bnh_avg_pos.index).ffill()
-                    _bnh_gross = (_bnh_avg_pos * _bnh_value_prop).reindex(bh_series.index).ffill().bfill()
-                    _bnh_margin = _margin_cost_series(_bnh_gross, _funding_path, MARGIN_COST_BP)
-                    if _bnh_margin is not None and len(_bnh_margin) > 0:
-                        _bnh_margin_aligned = _bnh_margin.reindex(bh_series.index).fillna(0.0)
-                        bh_series = bh_series - _bnh_margin_aligned
-                        _bnh_code_margin_applied = True
-                except Exception:
-                    pass
             bh_dec = bh_series / 100
             _, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh = _build_bh_stats(bh_dec, f"{code} B&H")
             f.write("\n%s B&H percent stats:\n" % code)
-            if _bnh_code_margin_applied:
-                f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
+            f.write("  Average capital used: 100.00%%\n")
+            f.write("  Average leverage: 1.00x\n")
             f.write("  Data period: %s\n" % _period_str(bh_series.index))
             _write_stats(f, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh)
     _wall_elapsed = _time.perf_counter() - _wall_start

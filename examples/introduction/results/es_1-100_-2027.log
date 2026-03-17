@@ -1,0 +1,279 @@
+estimatedsystem.py run at 2026-03-13T16:49:53.145763
+
+Data period: 1994-07-12 to 2026-03-06
+
+Sharpe: 0.4376
+
+Instruments: ['AAPL_yfinance', 'ABBV_yfinance', 'ABT_yfinance', 'ACN_yfinance', 'ADBE_yfinance', 'ADI_yfinance', 'AMAT_yfinance', 'AMD_yfinance', 'AMGN_yfinance', 'AMZN_yfinance', 'ANET_yfinance', 'APH_yfinance', 'APP_yfinance', 'AVGO_yfinance', 'AXP_yfinance', 'BAC_yfinance', 'BA_yfinance', 'BKNG_yfinance', 'BLK_yfinance', 'BMY_yfinance', 'BRK-B_yfinance', 'CAT_yfinance', 'CB_yfinance', 'CEG_yfinance', 'COF_yfinance', 'COP_yfinance', 'COST_yfinance', 'CRM_yfinance', 'CSCO_yfinance', 'CVX_yfinance', 'C_yfinance', 'DE_yfinance', 'DHR_yfinance', 'DIS_yfinance', 'ETN_yfinance', 'GEV_yfinance', 'GE_yfinance', 'GILD_yfinance', 'GOOGL_yfinance', 'GOOG_yfinance', 'GS_yfinance', 'HCA_yfinance', 'HD_yfinance', 'HON_yfinance', 'IBM_yfinance', 'INTC_yfinance', 'INTU_yfinance', 'ISRG_yfinance', 'JPM_yfinance', 'KLAC_yfinance', 'KO_yfinance', 'LIN_yfinance', 'LLY_yfinance', 'LMT_yfinance', 'LOW_yfinance', 'LRCX_yfinance', 'MA_yfinance', 'MCD_yfinance', 'MDT_yfinance', 'META_yfinance', 'MRK_yfinance', 'MSFT_yfinance', 'MS_yfinance', 'MU_yfinance', 'NEE_yfinance', 'NEM_yfinance', 'NFLX_yfinance', 'NOW_yfinance', 'NVDA_yfinance', 'ORCL_yfinance', 'PANW_yfinance', 'PEP_yfinance', 'PFE_yfinance', 'PGR_yfinance', 'PG_yfinance', 'PH_yfinance', 'PLD_yfinance', 'PLTR_yfinance', 'PM_yfinance', 'QCOM_yfinance', 'RTX_yfinance', 'SCHW_yfinance', 'SPGI_yfinance', 'SYK_yfinance', 'TJX_yfinance', 'TMO_yfinance', 'TMUS_yfinance', 'TSLA_yfinance', 'TXN_yfinance', 'T_yfinance', 'UBER_yfinance', 'UNH_yfinance', 'UNP_yfinance', 'VRTX_yfinance', 'VZ_yfinance', 'V_yfinance', 'WELL_yfinance', 'WFC_yfinance', 'WMT_yfinance', 'XOM_yfinance']
+
+Percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Daily:
+    min: -22.68
+    max: 7.438
+    median: 0.0389
+    mean: 0.0422
+    std: 1.543
+    skew: -0.9992
+  ann_mean: 10.8
+  ann_std: 24.69
+  sharpe: 0.4376
+  sortino: 0.5294
+  avg_drawdown: -29.52
+  geometric_worst_drawdown: -57.25 (peak: 2000-03-07, trough: 2003-08-06)
+  time_in_drawdown: 0.9582
+  calmar: 0.1373
+  avg_return_to_drawdown: 0.366
+  avg_loss: -1.031
+  avg_gain: 1.032
+  gaintolossratio: 1.001
+  profitfactor: 1.086
+  hitrate: 0.5202
+  t_stat: 2.486
+  p_value: 0.01295
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 268.27%
+  Average leverage: 2.68x
+
+Estimated instrument weights (final, descending):
+  UBER_yfinance             0.0514
+  COP_yfinance              0.0424
+  CEG_yfinance              0.0350
+  ANET_yfinance             0.0342
+  NEM_yfinance              0.0312
+  --- total: 1.0000  (100 instruments with weight > 0)
+
+Standard cost in Sharpe Ratio (per trade, annualised):
+  AAPL_yfinance             0.001718
+  ABBV_yfinance             0.001781
+  ABT_yfinance              0.001931
+  ACN_yfinance              0.001434
+  ADBE_yfinance             0.001187
+  ADI_yfinance              0.001415
+  AMAT_yfinance             0.001084
+  AMD_yfinance              0.000830
+  AMGN_yfinance             0.001620
+  AMZN_yfinance             0.001392
+  ANET_yfinance             0.000943
+  APH_yfinance              0.001433
+  APP_yfinance              0.000680
+  AVGO_yfinance             0.001098
+  AXP_yfinance              0.001646
+  BAC_yfinance              0.001798
+  BA_yfinance               0.001243
+  BKNG_yfinance             0.001673
+  BLK_yfinance              0.001773
+  BMY_yfinance              0.001481
+  BRK-B_yfinance            0.002588
+  CAT_yfinance              0.001596
+  CB_yfinance               0.002273
+  CEG_yfinance              0.000884
+  COF_yfinance              0.001357
+  COP_yfinance              0.001316
+  COST_yfinance             0.002193
+  CRM_yfinance              0.001263
+  CSCO_yfinance             0.001871
+  CVX_yfinance              0.001831
+  C_yfinance                0.001565
+  DE_yfinance               0.001633
+  DHR_yfinance              0.001429
+  DIS_yfinance              0.001470
+  ETN_yfinance              0.001460
+  GEV_yfinance              0.000862
+  GE_yfinance               0.001763
+  GILD_yfinance             0.001682
+  GOOGL_yfinance            0.001691
+  GOOG_yfinance             0.001709
+  GS_yfinance               0.001729
+  HCA_yfinance              0.001764
+  HD_yfinance               0.001957
+  HON_yfinance              0.001903
+  IBM_yfinance              0.001597
+  INTC_yfinance             0.000704
+  INTU_yfinance             0.001458
+  ISRG_yfinance             0.001408
+  JPM_yfinance              0.002006
+  KLAC_yfinance             0.001135
+  KO_yfinance               0.002620
+  LIN_yfinance              0.002477
+  LLY_yfinance              0.001247
+  LMT_yfinance              0.001759
+  LOW_yfinance              0.001821
+  LRCX_yfinance             0.001070
+  MA_yfinance               0.002000
+  MCD_yfinance              0.002495
+  MDT_yfinance              0.002065
+  META_yfinance             0.001297
+  MRK_yfinance              0.001563
+  MSFT_yfinance             0.001979
+  MS_yfinance               0.001739
+  MU_yfinance               0.000894
+  NEE_yfinance              0.001704
+  NEM_yfinance              0.001126
+  NFLX_yfinance             0.001462
+  NOW_yfinance              0.001151
+  NVDA_yfinance             0.001298
+  ORCL_yfinance             0.000876
+  PANW_yfinance             0.001329
+  PEP_yfinance              0.001970
+  PFE_yfinance              0.001525
+  PGR_yfinance              0.001880
+  PG_yfinance               0.002350
+  PH_yfinance               0.001816
+  PLD_yfinance              0.001735
+  PLTR_yfinance             0.000895
+  PM_yfinance               0.001945
+  QCOM_yfinance             0.001198
+  RTX_yfinance              0.001919
+  SCHW_yfinance             0.001827
+  SPGI_yfinance             0.001817
+  SYK_yfinance              0.002071
+  TJX_yfinance              0.002596
+  TMO_yfinance              0.001476
+  TMUS_yfinance             0.001725
+  TSLA_yfinance             0.000860
+  TXN_yfinance              0.001214
+  T_yfinance                0.002033
+  UBER_yfinance             0.001218
+  UNH_yfinance              0.000887
+  UNP_yfinance              0.001956
+  VRTX_yfinance             0.001390
+  VZ_yfinance               0.001930
+  V_yfinance                0.001999
+  WELL_yfinance             0.002281
+  WFC_yfinance              0.001642
+  WMT_yfinance              0.002048
+  XOM_yfinance              0.001868
+
+B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2026-03-06
+  Daily:
+    min: -11.48
+    max: 10.75
+    median: 0.11
+    mean: 0.1018
+    std: 1.65
+    skew: -0.4635
+  ann_mean: 26.06
+  ann_std: 26.41
+  sharpe: 0.9868
+  sortino: 1.314
+  avg_drawdown: -9.666
+  geometric_worst_drawdown: -52.46 (peak: 2007-10-31, trough: 2009-03-09)
+  time_in_drawdown: 0.8718
+  calmar: 0.3937
+  avg_return_to_drawdown: 2.696
+  avg_loss: -1.178
+  avg_gain: 1.221
+  gaintolossratio: 1.036
+  profitfactor: 1.185
+  hitrate: 0.5335
+  t_stat: 5.605
+  p_value: 2.153e-08
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 253.83%
+  Average leverage: 2.54x
+
+Estimated instrument weights (final, descending):
+  COP_yfinance              0.0502
+  UBER_yfinance             0.0464
+  CVX_yfinance              0.0383
+  XOM_yfinance              0.0306
+  NEE_yfinance              0.0263
+  --- total: 1.0000  (100 instruments with weight > 0)
+
+B&H cap capital percent stats:
+  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)
+  Data period: 1994-07-12 to 2026-03-06
+  Daily:
+    min: -8.838
+    max: 9.43
+    median: 0.04445
+    mean: 0.03619
+    std: 0.8256
+    skew: -0.6845
+  ann_mean: 9.265
+  ann_std: 13.21
+  sharpe: 0.7014
+  sortino: 0.8347
+  avg_drawdown: -4.717
+  geometric_worst_drawdown: -40.20 (peak: 2007-10-31, trough: 2009-03-09)
+  time_in_drawdown: 0.8744
+  calmar: 0.1965
+  avg_return_to_drawdown: 1.964
+  avg_loss: -0.5351
+  avg_gain: 0.5358
+  gaintolossratio: 1.001
+  profitfactor: 1.145
+  hitrate: 0.5335
+  t_stat: 3.984
+  p_value: 6.835e-05
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 99.67%
+  Average leverage: 1.00x
+
+B&H benchmarks (1× notional buy-and-hold):
+
+SP500 B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -9.879
+    max: 14.11
+    median: 0.04294
+    mean: 0.03462
+    std: 1.162
+    skew: -0.03356
+  ann_mean: 8.864
+  ann_std: 18.59
+  sharpe: 0.4768
+  sortino: 0.6021
+  avg_drawdown: -12.43
+  geometric_worst_drawdown: -63.10 (peak: 2000-03-24, trough: 2009-03-09)
+  time_in_drawdown: 0.9043
+  calmar: 0.1141
+  avg_return_to_drawdown: 0.7132
+  avg_loss: -0.8292
+  avg_gain: 0.7671
+  gaintolossratio: 0.9252
+  profitfactor: 1.095
+  hitrate: 0.5419
+  t_stat: 2.624
+  p_value: 0.008709
+
+SPY_yfinance B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1994-07-12 to 2026-03-06
+  Daily:
+    min: -10.03
+    max: 10.56
+    median: 0.03541
+    mean: 0.0361
+    std: 0.904
+    skew: -0.04564
+  ann_mean: 9.242
+  ann_std: 14.46
+  sharpe: 0.639
+  sortino: 0.7901
+  avg_drawdown: -5.738
+  geometric_worst_drawdown: -43.08 (peak: 2007-10-09, trough: 2009-03-09)
+  time_in_drawdown: 0.8715
+  calmar: 0.1815
+  avg_return_to_drawdown: 1.611
+  avg_loss: -0.6309
+  avg_gain: 0.5925
+  gaintolossratio: 0.9392
+  profitfactor: 1.131
+  hitrate: 0.5464
+  t_stat: 3.629
+  p_value: 0.000286
+
+Total runtime: 14 min 13.6 sec (853.6 sec)

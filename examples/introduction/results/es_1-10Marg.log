@@ -1,4 +1,4 @@
-estimatedsystem.py run at 2026-03-10T15:55:22.622131
+estimatedsystem.py run at 2026-03-10T16:27:20.868181
 
 Data period: 1994-07-12 to 2024-03-28
 
@@ -95,60 +95,62 @@ Estimated instrument weights (final, descending):
   NVDA_yfinance             0.0340
   --- total: 1.0000  (10 instruments with weight > 0)
 
-B&H benchmarks (all-in, full vol-targeted):
+B&H benchmarks (1× notional buy-and-hold):
 
 SP500 B&H percent stats:
-  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
   Data period: 1994-07-12 to 2024-03-28
   Daily:
-    min: -11.19
-    max: 5.643
-    median: 0.06018
-    mean: 0.03845
-    std: 1.345
-    skew: -0.6046
-  ann_mean: 9.844
-  ann_std: 21.52
-  sharpe: 0.4574
-  sortino: 0.6012
-  avg_drawdown: -24.79
-  geometric_worst_drawdown: -67.99 (peak: 1999-07-16, trough: 2009-03-09)
-  time_in_drawdown: 0.9498
-  calmar: 0.106
-  avg_return_to_drawdown: 0.3971
-  avg_loss: -0.9876
-  avg_gain: 0.9807
-  gaintolossratio: 0.993
-  profitfactor: 1.081
-  hitrate: 0.5213
-  t_stat: 2.517
-  p_value: 0.01185
+    min: -9.879
+    max: 14.11
+    median: 0.04294
+    mean: 0.03462
+    std: 1.162
+    skew: -0.03356
+  ann_mean: 8.864
+  ann_std: 18.59
+  sharpe: 0.4768
+  sortino: 0.6021
+  avg_drawdown: -12.43
+  geometric_worst_drawdown: -63.10 (peak: 2000-03-24, trough: 2009-03-09)
+  time_in_drawdown: 0.9043
+  calmar: 0.1141
+  avg_return_to_drawdown: 0.7132
+  avg_loss: -0.8292
+  avg_gain: 0.7671
+  gaintolossratio: 0.9252
+  profitfactor: 1.095
+  hitrate: 0.5419
+  t_stat: 2.624
+  p_value: 0.008709
 
 SPY_yfinance B&H percent stats:
-  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
   Data period: 1994-07-12 to 2024-03-28
   Daily:
-    min: -9.805
-    max: 6.336
-    median: 0.04602
-    mean: 0.04645
-    std: 1.355
-    skew: -0.5518
-  ann_mean: 11.89
-  ann_std: 21.68
-  sharpe: 0.5484
-  sortino: 0.7299
-  avg_drawdown: -18.09
-  geometric_worst_drawdown: -59.10 (peak: 1999-07-16, trough: 2009-03-09)
-  time_in_drawdown: 0.9416
-  calmar: 0.1479
-  avg_return_to_drawdown: 0.6574
-  avg_loss: -0.9915
-  avg_gain: 1.009
-  gaintolossratio: 1.017
-  profitfactor: 1.098
-  hitrate: 0.519
-  t_stat: 3.018
-  p_value: 0.002553
+    min: -10.03
+    max: 10.56
+    median: 0.03337
+    mean: 0.03468
+    std: 0.8966
+    skew: -0.161
+  ann_mean: 8.879
+  ann_std: 14.35
+  sharpe: 0.6189
+  sortino: 0.7647
+  avg_drawdown: -5.985
+  geometric_worst_drawdown: -43.08 (peak: 2007-10-09, trough: 2009-03-09)
+  time_in_drawdown: 0.8757
+  calmar: 0.1743
+  avg_return_to_drawdown: 1.484
+  avg_loss: -0.6257
+  avg_gain: 0.59
+  gaintolossratio: 0.9429
+  profitfactor: 1.127
+  hitrate: 0.5444
+  t_stat: 3.406
+  p_value: 0.0006625
 
-Total runtime: 1 min 5.4 sec (65.4 sec)
+Total runtime: 1 min 3.8 sec (63.8 sec)

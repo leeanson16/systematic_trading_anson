@@ -1,0 +1,183 @@
+estimatedsystem.py run at 2026-03-13T17:14:33.025786
+
+Data period: 1972-10-18 to 2024-03-28
+
+Sharpe: 0.5314
+
+Instruments: ['CORN', 'EUROSTX', 'MXP', 'SOFR', 'US10', 'V2X']
+
+Percent stats:
+  Daily:
+    min: -21.15
+    max: 9.6
+    median: 0.009973
+    mean: 0.04315
+    std: 1.299
+    skew: -0.4709
+  ann_mean: 11.05
+  ann_std: 20.78
+  sharpe: 0.5314
+  sortino: 0.6905
+  avg_drawdown: -20.21
+  geometric_worst_drawdown: -52.77 (peak: 1974-02-25, trough: 1981-07-13)
+  time_in_drawdown: 0.9684
+  calmar: 0.1631
+  avg_return_to_drawdown: 0.5464
+  avg_loss: -0.9015
+  avg_gain: 0.916
+  gaintolossratio: 1.016
+  profitfactor: 1.103
+  hitrate: 0.5205
+  t_stat: 3.848
+  p_value: 0.0001196
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 656.84%
+  Average leverage: 6.57x
+
+Estimated instrument weights (final, descending):
+  CORN                      0.2580
+  SOFR                      0.1891
+  US10                      0.1891
+  MXP                       0.1703
+  EUROSTX                   0.0968
+  --- total: 1.0000  (6 instruments with weight > 0)
+
+Standard cost in Sharpe Ratio (per trade, annualised):
+  CORN                      0.002043
+  EUROSTX                   0.001156
+  MXP                       0.001714
+  SOFR                      0.003162
+  US10                      0.001259
+  V2X                       0.005771
+
+B&H percent stats:
+  Data period: 1972-10-18 to 2024-03-28
+  Daily:
+    min: -8.355
+    max: 7.025
+    median: -3.6e-06
+    mean: 0.02893
+    std: 1.129
+    skew: -0.06069
+  ann_mean: 7.405
+  ann_std: 18.07
+  sharpe: 0.4098
+  sortino: 0.6198
+  avg_drawdown: -26.14
+  geometric_worst_drawdown: -64.21 (peak: 1974-10-03, trough: 1982-11-02)
+  time_in_drawdown: 0.9668
+  calmar: 0.07539
+  avg_return_to_drawdown: 0.2833
+  avg_loss: -0.8207
+  avg_gain: 0.8903
+  gaintolossratio: 1.085
+  profitfactor: 1.07
+  hitrate: 0.4966
+  t_stat: 2.968
+  p_value: 0.003007
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 707.31%
+  Average leverage: 7.07x
+
+Estimated instrument weights (final, descending):
+  SOFR                      0.6947
+  US10                      0.1297
+  MXP                       0.0766
+  CORN                      0.0500
+  EUROSTX                   0.0377
+  --- total: 1.0000  (6 instruments with weight > 0)
+
+B&H cap capital percent stats:
+  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)
+  Data period: 1972-10-18 to 2024-03-28
+  Daily:
+    min: -5.33
+    max: 4.462
+    median: -6.12e-07
+    mean: 0.003701
+    std: 0.5248
+    skew: 0.08504
+  ann_mean: 0.9474
+  ann_std: 8.397
+  sharpe: 0.1128
+  sortino: 0.1313
+  avg_drawdown: -45.26
+  geometric_worst_drawdown: -64.18 (peak: 1974-10-03, trough: 1982-11-02)
+  time_in_drawdown: 0.9949
+  calmar: 0.01043
+  avg_return_to_drawdown: 0.02093
+  avg_loss: -0.2557
+  avg_gain: 0.2667
+  gaintolossratio: 1.043
+  profitfactor: 1.029
+  hitrate: 0.4966
+  t_stat: 0.817
+  p_value: 0.414
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 97.46%
+  Average leverage: 0.97x
+
+B&H benchmarks (1× notional buy-and-hold):
+
+SP500 B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1982-09-14 to 2024-03-28
+  Daily:
+    min: -28.61
+    max: 19.42
+    median: 0.0372
+    mean: 0.035
+    std: 1.169
+    skew: -1.037
+  ann_mean: 8.959
+  ann_std: 18.7
+  sharpe: 0.479
+  sortino: 0.577
+  avg_drawdown: -10.56
+  geometric_worst_drawdown: -63.10 (peak: 2000-03-24, trough: 2009-03-09)
+  time_in_drawdown: 0.9139
+  calmar: 0.1153
+  avg_return_to_drawdown: 0.8486
+  avg_loss: -0.8015
+  avg_gain: 0.7551
+  gaintolossratio: 0.9421
+  profitfactor: 1.098
+  hitrate: 0.5383
+  t_stat: 3.117
+  p_value: 0.001833
+
+SPY_yfinance B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1994-07-12 to 2024-03-28
+  Daily:
+    min: -10.03
+    max: 10.56
+    median: 0.03337
+    mean: 0.03468
+    std: 0.8966
+    skew: -0.161
+  ann_mean: 8.879
+  ann_std: 14.35
+  sharpe: 0.6189
+  sortino: 0.7647
+  avg_drawdown: -5.985
+  geometric_worst_drawdown: -43.08 (peak: 2007-10-09, trough: 2009-03-09)
+  time_in_drawdown: 0.8757
+  calmar: 0.1743
+  avg_return_to_drawdown: 1.484
+  avg_loss: -0.6257
+  avg_gain: 0.59
+  gaintolossratio: 0.9429
+  profitfactor: 1.127
+  hitrate: 0.5444
+  t_stat: 3.406
+  p_value: 0.0006625
+
+Total runtime: 0 min 55.5 sec (55.5 sec)

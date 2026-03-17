@@ -1,35 +1,38 @@
 # config for introduction estimated system
-start_date: "1994-07-12" #1972-01-01 1984-01-01 1994-07-12
-end_date: "2024-03-28"
+start_date: "1972-01-01" #1972-01-01 1984-01-01 1994-07-12
+end_date: "2024-03-28" # 2024-03-28 2027-01-01
+
+# Volatility target for the system (overrides futuresestimateconfig.yaml percentage_vol_target)
+percentage_vol_target: 20.0
 
 # Set to true to use BBG data files (instrument code + "_BBG" suffix, e.g. SOFR_BBG.csv).
 # Files may cover a shorter period than instrument_periods below — that is fine.
+# When use_bbg: true, _BBG suffix is appended in code.
 use_bbg: False
 
-# Optional: override portfolio instruments (default from futuresestimateconfig.yaml).
-# When use_bbg: true, _BBG suffix is appended in code.
-# When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
-instruments_from_csv: "data/custom/S&P_500_component_stocks_1-10.csv"
-instruments_column: "Symbol"
-instruments_suffix: "_yfinance"
+# B&H cap capital percent stats: Same as B&H of the system, but caps maximum capital used to 100%.
+# When the strategy would use more than 100% of capital, weights are normalized and the portfolio
+# is held so gross notional = 100%. Log prints Capital usage (gross notional vs notional capital) for this.
+# Margin cost on excess capital (FUNDING_COST + 100bp). Set to false to switch off for Percent stats and B&H.
+apply_margin_cost: False
 
-# instruments:
-#   ['NVDA_yfinance',
-#   'MSFT_yfinance',
-#   'META_yfinance',
-#   'GOOGL_yfinance',
-#   'AMZN_yfinance',
-#   'AAPL_yfinance',
-#   'TSLA_yfinance']
+# # When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
+# instruments_from_csv: "data/custom/S&P_500_component_stocks_1-100.csv"
+# instruments_column: "Symbol"
+# instruments_suffix: "_yfinance"
+
+# By instruments
+instruments:
+  ['SOFR',
+  'US10',
+  'EUROSTX',
+  'MXP',
+  'CORN',
+  'V2X']
 
 bnh_instruments:
   ['SP500',
   'SPY_yfinance']
-
-# When an ETF (e.g. SPY_yfinance) is in instruments and its multiple_prices has 
-# DIVIDEND_YIELD and FUNDING_COST:
-#   raw_futures_roll = PRICE*DIVIDEND_YIELD − CARRY*FUNDING_COST, 
-# roll_differentials = 1 (years).
 
 Notes: |
   Data periods (BBG):
@@ -40,3 +43,8 @@ Notes: |
   MXP_BBG	1995-09-15	2024-03-28	~29 years
   CORN_BBG	1972-10-18	2024-03-28	~51 years
   V2X_BBG	2013-01-02	2024-03-28	~11 years
+
+  When an ETF (e.g. SPY_yfinance) is in instruments and its multiple_prices has 
+  DIVIDEND_YIELD and FUNDING_COST:
+    raw_futures_roll = PRICE*DIVIDEND_YIELD − CARRY*FUNDING_COST, 
+  roll_differentials = 1 (years).
