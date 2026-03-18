@@ -1,6 +1,6 @@
 # config for introduction estimated system
-start_date: "1972-01-01" #1972-01-01 1984-01-01 1994-07-12
-end_date: "2024-03-28" # 2024-03-28 2027-01-01
+start_date: "1994-07-12" #1972-01-01 1984-01-01 1994-07-12
+end_date: "2027-01-01" # 2024-03-28 2027-01-01
 
 # Volatility target for the system (overrides futuresestimateconfig.yaml percentage_vol_target)
 percentage_vol_target: 20.0
@@ -13,22 +13,22 @@ use_bbg: False
 # B&H cap capital percent stats: Same as B&H of the system, but caps maximum capital used to 100%.
 # When the strategy would use more than 100% of capital, weights are normalized and the portfolio
 # is held so gross notional = 100%. Log prints Capital usage (gross notional vs notional capital) for this.
-# Margin cost on excess capital (FUNDING_COST + 100bp). Set to false to switch off for Percent stats and B&H.
-apply_margin_cost: False
+# Margin cost on excess capital (FUNDING_COST + 100bp). Set to false to switch off for Strategy and B&H.
+apply_margin_cost: True
 
-# # When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
-# instruments_from_csv: "data/custom/S&P_500_component_stocks_1-100.csv"
-# instruments_column: "Symbol"
-# instruments_suffix: "_yfinance"
+# When instruments_from_csv is set, instruments are read from that CSV (Symbol column) with _yfinance suffix.
+instruments_from_csv: "data/custom/S&P_500_component_stocks_1-100.csv"
+instruments_column: "Symbol"
+instruments_suffix: "_yfinance"
 
-# By instruments
-instruments:
-  ['SOFR',
-  'US10',
-  'EUROSTX',
-  'MXP',
-  'CORN',
-  'V2X']
+# # By instruments
+# instruments:
+#   ['SOFR',
+#   'US10',
+#   'EUROSTX',
+#   'MXP',
+#   'CORN',
+#   'V2X']
 
 bnh_instruments:
   ['SP500',

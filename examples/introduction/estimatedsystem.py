@@ -55,6 +55,9 @@ def _geo_worst_drawdown(returns_decimal):
 
 MARGIN_COST_BP = 100.0
 FUNDING_COST_FILENAME = "FUNDING_COST.csv"
+# StrategyLS/B&HLS: margin cost only on excess short capital = (used_short_capital * LS_MARGIN_SHORT_GROSS_FACTOR) - 1; no long-side margin.
+LS_SHORT_NOTIONAL = 1.0
+LS_MARGIN_SHORT_GROSS_FACTOR = 1.5
 
 
 def _gross_capital_usage_and_leverage(system, instruments, end_ts, pct_index):
@@ -389,6 +392,128 @@ else:
     bh_cap_trough_date = bh_trough_date
     bh_cap_returns = bh_pct_returns
 
+# StrategyLS = Strategy minus 1× SP500 (long Strategy, short SP500). B&HLS = B&H minus 1× SP500.
+LS_HEDGE_CODE = "SP500"
+_sp500_dec = None
+try:
+    _sp500_curve = _bh_curve_1x_notional(system, LS_HEDGE_CODE)
+    _sp500_pct = pd.Series(_sp500_curve.percent.values, index=_sp500_curve.percent.index)
+    _sp500_dec = _sp500_pct / 100.0
+except Exception:
+    pass
+
+# Additional B&H variants for drawdown control experiments:
+# 1) B&H_lowvol: scale B&H returns down (e.g. 0.5x) to emulate a lower vol target.
+bh_lowvol_returns = None
+bh_lowvol_stats = bh_lowvol_geo_dd = bh_lowvol_peak = bh_lowvol_trough = None
+if bh_pct_returns is not None and len(bh_pct_returns) > 0:
+    bh_lowvol_returns = bh_pct_returns * 0.5
+    _, bh_lowvol_stats, bh_lowvol_geo_dd, bh_lowvol_peak, bh_lowvol_trough = _build_bh_stats(bh_lowvol_returns, "B&H_lowvol")
+
+# 2) B&H_cap_80: cap gross at 80% (when gross > 0.8, scale down so gross = 0.8).
+bh_cap80_returns = None
+bh_cap80_stats = bh_cap80_geo_dd = bh_cap80_peak = bh_cap80_trough = None
+if _bh_gross_aligned is not None and len(_bh_gross_aligned) > 0 and bh_pct_returns is not None and len(bh_pct_returns) > 0:
+    _bh_factor80 = (_bh_gross_aligned / 0.8).clip(lower=1.0)
+    bh_cap80_returns = bh_pct_returns / _bh_factor80
+    _, bh_cap80_stats, bh_cap80_geo_dd, bh_cap80_peak, bh_cap80_trough = _build_bh_stats(bh_cap80_returns, "B&H_cap_80")
+
+# 3) B&H_hedge_50: partially hedged B&H (short 0.5× SP500).
+bh_hedge50_returns = None
+bh_hedge50_stats = bh_hedge50_geo_dd = bh_hedge50_peak = bh_hedge50_trough = None
+if _sp500_dec is not None and len(_sp500_dec) > 0 and bh_pct_returns is not None and len(bh_pct_returns) > 0:
+    _sp500_aligned_bh_50 = _sp500_dec.reindex(bh_pct_returns.index).ffill().bfill()
+    bh_hedge50_returns = (bh_pct_returns - 0.5 * _sp500_aligned_bh_50).dropna()
+    _, bh_hedge50_stats, bh_hedge50_geo_dd, bh_hedge50_peak, bh_hedge50_trough = _build_bh_stats(bh_hedge50_returns, "B&H_hedge_50")
+_strategy_dec = pd.Series(pct.values, index=pct.index) / 100.0
+_strategy_ls_margin_cost_applied = False
+_strategy_ls_avg_gross_pct = None
+_strategy_ls_avg_lev = None
+_strategy_ls_excess_long_avg_pct = None
+if _sp500_dec is not None and len(_sp500_dec) > 0:
+    _sp500_aligned_strat = _sp500_dec.reindex(_strategy_dec.index).ffill().bfill()
+    _strategy_ls_returns = (_strategy_dec - _sp500_aligned_strat).dropna()
+    if _gross_series is not None and len(_gross_series) > 0:
+        _long_gross_strat = _gross_series.reindex(_strategy_ls_returns.index).ffill().bfill()
+        _gross_ls_strat = _long_gross_strat + 1.0
+        _strategy_ls_avg_gross_pct = float(_gross_ls_strat.mean()) * 100.0
+        _strategy_ls_avg_lev = float(_gross_ls_strat.mean())
+        _excess_long_strat = (_long_gross_strat - 1).clip(lower=0)
+        _strategy_ls_excess_long_avg_pct = float(_excess_long_strat.mean()) * 100.0
+    # Margin cost only on excess long capital: (used_long - 1), implemented via gross = used_long + 0.0 (so excess = gross - 1)
+    if _apply_margin_cost and _funding_path and _gross_series is not None and len(_gross_series) > 0:
+        _long_gross_strat = _gross_series.reindex(_strategy_ls_returns.index).ffill().bfill()
+        _gross_ls_margin_strat = _long_gross_strat + 0.0
+        _margin_ls_strat = _margin_cost_series(_gross_ls_margin_strat, _funding_path, MARGIN_COST_BP)
+        if _margin_ls_strat is not None and len(_margin_ls_strat) > 0:
+            _margin_ls_strat_aligned = _margin_ls_strat.reindex(_strategy_ls_returns.index).fillna(0.0) / 100.0
+            _strategy_ls_returns = _strategy_ls_returns - _margin_ls_strat_aligned
+            _strategy_ls_margin_cost_applied = True
+    _, strategy_ls_stats, strategy_ls_geo_dd, strategy_ls_peak, strategy_ls_trough = _build_bh_stats(_strategy_ls_returns, "StrategyLS")
+else:
+    strategy_ls_stats = None
+    strategy_ls_geo_dd = strategy_ls_peak = strategy_ls_trough = None
+    _strategy_ls_avg_gross_pct = _strategy_ls_avg_lev = _strategy_ls_excess_long_avg_pct = None
+_bh_ls_margin_cost_applied = False
+_bh_ls_avg_gross_pct = None
+_bh_ls_avg_lev = None
+_bh_ls_excess_long_avg_pct = None
+if _sp500_dec is not None and len(_sp500_dec) > 0 and bh_pct_returns is not None and len(bh_pct_returns) > 0:
+    _sp500_aligned_bh = _sp500_dec.reindex(bh_pct_returns.index).ffill().bfill()
+    _bh_ls_returns = (bh_pct_returns - _sp500_aligned_bh).dropna()
+    _gross_ls_bh = None
+    if _bh_gross_aligned is not None and len(_bh_gross_aligned) > 0:
+        _gross_ls_bh = _bh_gross_aligned.reindex(_bh_ls_returns.index).ffill().bfill() + 1.0
+        _bh_ls_avg_gross_pct = float(_gross_ls_bh.mean()) * 100.0
+        _bh_ls_avg_lev = float(_gross_ls_bh.mean())
+        _long_gross_bh = _bh_gross_aligned.reindex(_bh_ls_returns.index).ffill().bfill()
+        _excess_long_bh = (_long_gross_bh - 1).clip(lower=0)
+        _bh_ls_excess_long_avg_pct = float(_excess_long_bh.mean()) * 100.0
+    # Margin cost only on excess long capital: (used_long - 1), using B&H long gross
+    if _apply_margin_cost and _funding_path and _bh_gross_aligned is not None and len(_bh_gross_aligned) > 0:
+        _long_gross_bh = _bh_gross_aligned.reindex(_bh_ls_returns.index).ffill().bfill()
+        _gross_ls_margin_bh = _long_gross_bh + 0.0
+        _margin_ls_bh = _margin_cost_series(_gross_ls_margin_bh, _funding_path, MARGIN_COST_BP)
+        if _margin_ls_bh is not None and len(_margin_ls_bh) > 0:
+            _margin_ls_bh_aligned = _margin_ls_bh.reindex(_bh_ls_returns.index).fillna(0.0) / 100.0
+            _bh_ls_returns = _bh_ls_returns - _margin_ls_bh_aligned
+            _bh_ls_margin_cost_applied = True
+    _, bh_ls_stats, bh_ls_geo_dd, bh_ls_peak, bh_ls_trough = _build_bh_stats(_bh_ls_returns, "B&HLS")
+    # B&HLS_levS: hedge short SP500 scaled to leveraged long position (short notional = B&H gross)
+    _bh_ls_levS_margin_cost_applied = False
+    _bh_ls_levS_avg_gross_pct = None
+    _bh_ls_levS_avg_lev = None
+    _bh_ls_levS_returns = None
+    if _bh_gross_aligned is not None and len(_bh_gross_aligned) > 0:
+        # B&H gross (long) and short gross both equal _bh_gross_aligned → total gross = 2×
+        _bh_ls_levS_returns = (bh_pct_returns - (_bh_gross_aligned * _sp500_aligned_bh)).dropna()
+        _gross_ls_levS = (_bh_gross_aligned.reindex(_bh_ls_levS_returns.index).ffill().bfill() * 2.0)
+        _bh_ls_levS_avg_gross_pct = float(_gross_ls_levS.mean()) * 100.0
+        _bh_ls_levS_avg_lev = float(_gross_ls_levS.mean())
+        if _apply_margin_cost and _funding_path:
+            # Margin on excess short capital: short_notional * 1.5, here short_notional = _bh_gross_aligned
+            _gross_ls_levS_margin = (_bh_gross_aligned.reindex(_bh_ls_levS_returns.index).ffill().bfill() * LS_MARGIN_SHORT_GROSS_FACTOR)
+            _margin_ls_levS = _margin_cost_series(_gross_ls_levS_margin, _funding_path, MARGIN_COST_BP)
+            if _margin_ls_levS is not None and len(_margin_ls_levS) > 0:
+                _margin_ls_levS_aligned = _margin_ls_levS.reindex(_bh_ls_levS_returns.index).fillna(0.0) / 100.0
+                _bh_ls_levS_returns = _bh_ls_levS_returns - _margin_ls_levS_aligned
+                _bh_ls_levS_margin_cost_applied = True
+        if _bh_ls_levS_returns is not None and len(_bh_ls_levS_returns) > 0:
+            _, bh_ls_levS_stats, bh_ls_levS_geo_dd, bh_ls_levS_peak, bh_ls_levS_trough = _build_bh_stats(_bh_ls_levS_returns, "B&HLS_levS")
+        else:
+            bh_ls_levS_stats = None
+            bh_ls_levS_geo_dd = bh_ls_levS_peak = bh_ls_levS_trough = None
+else:
+    bh_ls_stats = None
+    bh_ls_geo_dd = bh_ls_peak = bh_ls_trough = None
+    _bh_ls_excess_long_avg_pct = None
+    _bh_ls_levS_margin_cost_applied = False
+    _bh_ls_levS_avg_gross_pct = None
+    _bh_ls_levS_avg_lev = None
+    _bh_ls_levS_returns = None
+    bh_ls_levS_stats = None
+    bh_ls_levS_geo_dd = bh_ls_levS_peak = bh_ls_levS_trough = None
+
 def _period_str(ix):
     if ix is None or len(ix) == 0:
         return "n/a"
@@ -398,27 +523,23 @@ with open(log_path, "w") as f:
     f.write("estimatedsystem.py run at %s\n\n" % datetime.now().isoformat())
     f.write("Data period: %s\n\n" % _period_str(pct.index))
     f.write("Sharpe: %s\n\n" % sharpe_val)
-    _daily_fields = {"min", "max", "median", "mean", "std", "skew"}
     def _write_stats(f, stats_obj, geo_dd, peak_date, trough_date):
         items = stats_obj[0] if isinstance(stats_obj, (list, tuple)) and len(stats_obj) >= 1 else []
-        daily_written = False
+        allowed = {"ann_mean", "sharpe", "calmar", "gaintolossratio", "hitrate", "p_value"}
         for name, val in items:
-            if name in _daily_fields:
-                if not daily_written:
-                    f.write("  Daily:\n")
-                    daily_written = True
-                f.write("    %s: %s\n" % (name, val))
-            elif name == "worst_drawdown":
+            if name == "worst_drawdown":
                 f.write("  geometric_worst_drawdown: %.2f (peak: %s, trough: %s)\n" % (
                     geo_dd,
                     peak_date.strftime("%Y-%m-%d") if hasattr(peak_date, "strftime") else peak_date,
                     trough_date.strftime("%Y-%m-%d") if hasattr(trough_date, "strftime") else trough_date,
                 ))
-            else:
+            elif name in allowed:
                 f.write("  %s: %s\n" % (name, val))
+            else:
+                continue
 
     f.write("Instruments: %s\n\n" % instruments)
-    f.write("Percent stats:\n")
+    f.write("Strategy Percent stats:\n")
     if _margin_cost_applied:
         f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
     _write_stats(f, stats_obj, sys_geo_dd, sys_peak_date, sys_trough_date)
@@ -434,20 +555,30 @@ with open(log_path, "w") as f:
         if _w > 1e-6:
             f.write("  %-25s %.4f\n" % (_code, _w))
             _printed += 1
-            if _printed >= 5:
+            if _printed >= 3:
                 break
     _iw_sum = _iw_last.sum()
     _n_nonzero = (_iw_last > 1e-6).sum()
     f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_iw_sum, _n_nonzero))
 
-    # Standard transaction cost in Sharpe Ratio units (per trade) for all instruments
-    f.write("\nStandard cost in Sharpe Ratio (per trade, annualised):\n")
-    for _code in instruments:
-        try:
-            _sr_cost = system.accounts.get_SR_cost_per_trade_for_instrument(_code)
-        except Exception:
-            _sr_cost = float("nan")
-        f.write("  %-25s %.6f\n" % (_code, _sr_cost))
+    if strategy_ls_stats is not None:
+        f.write("\nStrategyLS Percent stats:\n")
+        f.write("  (Strategy minus 1× SP500; long Strategy, short SP500)\n")
+        if _strategy_ls_margin_cost_applied:
+            f.write("  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)\n")
+        f.write("  Data period: %s\n" % _period_str(_strategy_ls_returns.index))
+        _write_stats(f, strategy_ls_stats, strategy_ls_geo_dd, strategy_ls_peak, strategy_ls_trough)
+        f.write("\nCapital usage (gross notional vs notional capital):\n")
+        if _strategy_ls_avg_gross_pct is not None and _strategy_ls_avg_lev is not None:
+            f.write("  Average capital used: %.2f%%\n" % _strategy_ls_avg_gross_pct)
+            f.write("  Average leverage: %.2fx\n" % _strategy_ls_avg_lev)
+        else:
+            f.write("  Average capital used: n/a\n")
+            f.write("  Average leverage: n/a\n")
+        if _strategy_ls_excess_long_avg_pct is not None:
+            f.write("  Excess long capital (avg): %.2f%%\n" % _strategy_ls_excess_long_avg_pct)
+        else:
+            f.write("  Excess long capital (avg): n/a\n")
     f.write("\nB&H percent stats:\n")
     if _bh_margin_cost_applied:
         f.write("  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)\n")
@@ -467,10 +598,42 @@ with open(log_path, "w") as f:
                 if _w > 1e-6:
                     f.write("  %-25s %.4f\n" % (_code, _w))
                     _printed += 1
-                    if _printed >= 5:
+                    if _printed >= 3:
                         break
             _bh_n_nonzero = (_bh_iw_last > 1e-6).sum()
             f.write("  --- total: %.4f  (%d instruments with weight > 0)\n" % (_bh_iw_last.sum(), _bh_n_nonzero))
+    if bh_ls_stats is not None:
+        f.write("\nB&HLS Percent stats:\n")
+        f.write("  (B&H minus 1× SP500; long B&H, short SP500)\n")
+        if _bh_ls_margin_cost_applied:
+            f.write("  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)\n")
+        f.write("  Data period: %s\n" % _period_str(_bh_ls_returns.index))
+        _write_stats(f, bh_ls_stats, bh_ls_geo_dd, bh_ls_peak, bh_ls_trough)
+        f.write("\nCapital usage (gross notional vs notional capital):\n")
+        if _bh_ls_avg_gross_pct is not None and _bh_ls_avg_lev is not None:
+            f.write("  Average capital used: %.2f%%\n" % _bh_ls_avg_gross_pct)
+            f.write("  Average leverage: %.2fx\n" % _bh_ls_avg_lev)
+        else:
+            f.write("  Average capital used: n/a\n")
+            f.write("  Average leverage: n/a\n")
+        if _bh_ls_excess_long_avg_pct is not None:
+            f.write("  Excess long capital (avg): %.2f%%\n" % _bh_ls_excess_long_avg_pct)
+        else:
+            f.write("  Excess long capital (avg): n/a\n")
+    if bh_ls_levS_stats is not None and _bh_ls_levS_returns is not None:
+        f.write("\nB&HLS_levS Percent stats:\n")
+        f.write("  (B&H minus SP500 shorted at B&H leverage; long B&H, short SP500 × B&H gross)\n")
+        if _bh_ls_levS_margin_cost_applied:
+            f.write("  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)\n")
+        f.write("  Data period: %s\n" % _period_str(_bh_ls_levS_returns.index))
+        _write_stats(f, bh_ls_levS_stats, bh_ls_levS_geo_dd, bh_ls_levS_peak, bh_ls_levS_trough)
+        f.write("\nCapital usage (gross notional vs notional capital):\n")
+        if _bh_ls_levS_avg_gross_pct is not None and _bh_ls_levS_avg_lev is not None:
+            f.write("  Average capital used: %.2f%%\n" % _bh_ls_levS_avg_gross_pct)
+            f.write("  Average leverage: %.2fx\n" % _bh_ls_levS_avg_lev)
+        else:
+            f.write("  Average capital used: n/a\n")
+            f.write("  Average leverage: n/a\n")
     f.write("\nB&H cap capital percent stats:\n")
     f.write("  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)\n")
     f.write("  Data period: %s\n" % _period_str(bh_cap_returns.index))
@@ -482,6 +645,26 @@ with open(log_path, "w") as f:
     else:
         f.write("  Average capital used: n/a\n")
         f.write("  Average leverage: n/a\n")
+
+    # Experimental B&H variants to explore lower drawdown:
+    if bh_lowvol_stats is not None and bh_lowvol_returns is not None:
+        f.write("\nB&H_lowvol Percent stats:\n")
+        f.write("  (B&H scaled to 0.5× returns to emulate lower vol target)\n")
+        f.write("  Data period: %s\n" % _period_str(bh_lowvol_returns.index))
+        _write_stats(f, bh_lowvol_stats, bh_lowvol_geo_dd, bh_lowvol_peak, bh_lowvol_trough)
+
+    if bh_cap80_stats is not None and bh_cap80_returns is not None:
+        f.write("\nB&H_cap_80 Percent stats:\n")
+        f.write("  (B&H with gross capped at 80%%; when gross>0.8 scale weights down)\n")
+        f.write("  Data period: %s\n" % _period_str(bh_cap80_returns.index))
+        _write_stats(f, bh_cap80_stats, bh_cap80_geo_dd, bh_cap80_peak, bh_cap80_trough)
+
+    if bh_hedge50_stats is not None and bh_hedge50_returns is not None:
+        f.write("\nB&H_hedge_50 Percent stats:\n")
+        f.write("  (B&H partially hedged: short 0.5× SP500)\n")
+        f.write("  Data period: %s\n" % _period_str(bh_hedge50_returns.index))
+        _write_stats(f, bh_hedge50_stats, bh_hedge50_geo_dd, bh_hedge50_peak, bh_hedge50_trough)
+
     bnh_list = config.get_element_or_default("bnh_instruments", []) or []
     if bnh_list:
         f.write("\nB&H benchmarks (1× notional buy-and-hold):\n")

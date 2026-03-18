@@ -1,0 +1,176 @@
+estimatedsystem.py run at 2026-03-18T14:23:03.017997
+
+Data period: 1994-07-12 to 2024-03-28
+
+Sharpe: 0.4194
+
+Instruments: ['AAPL_yfinance', 'ABBV_yfinance', 'ABT_yfinance', 'ACN_yfinance', 'ADBE_yfinance', 'ADI_yfinance', 'AMAT_yfinance', 'AMD_yfinance', 'AMGN_yfinance', 'AMZN_yfinance', 'ANET_yfinance', 'APH_yfinance', 'APP_yfinance', 'AVGO_yfinance', 'AXP_yfinance', 'BAC_yfinance', 'BA_yfinance', 'BKNG_yfinance', 'BLK_yfinance', 'BMY_yfinance', 'BRK-B_yfinance', 'CAT_yfinance', 'CB_yfinance', 'CEG_yfinance', 'COF_yfinance', 'COP_yfinance', 'COST_yfinance', 'CRM_yfinance', 'CSCO_yfinance', 'CVX_yfinance', 'C_yfinance', 'DE_yfinance', 'DHR_yfinance', 'DIS_yfinance', 'ETN_yfinance', 'GEV_yfinance', 'GE_yfinance', 'GILD_yfinance', 'GOOGL_yfinance', 'GOOG_yfinance', 'GS_yfinance', 'HCA_yfinance', 'HD_yfinance', 'HON_yfinance', 'IBM_yfinance', 'INTC_yfinance', 'INTU_yfinance', 'ISRG_yfinance', 'JPM_yfinance', 'KLAC_yfinance', 'KO_yfinance', 'LIN_yfinance', 'LLY_yfinance', 'LMT_yfinance', 'LOW_yfinance', 'LRCX_yfinance', 'MA_yfinance', 'MCD_yfinance', 'MDT_yfinance', 'META_yfinance', 'MRK_yfinance', 'MSFT_yfinance', 'MS_yfinance', 'MU_yfinance', 'NEE_yfinance', 'NEM_yfinance', 'NFLX_yfinance', 'NOW_yfinance', 'NVDA_yfinance', 'ORCL_yfinance', 'PANW_yfinance', 'PEP_yfinance', 'PFE_yfinance', 'PGR_yfinance', 'PG_yfinance', 'PH_yfinance', 'PLD_yfinance', 'PLTR_yfinance', 'PM_yfinance', 'QCOM_yfinance', 'RTX_yfinance', 'SCHW_yfinance', 'SPGI_yfinance', 'SYK_yfinance', 'TJX_yfinance', 'TMO_yfinance', 'TMUS_yfinance', 'TSLA_yfinance', 'TXN_yfinance', 'T_yfinance', 'UBER_yfinance', 'UNH_yfinance', 'UNP_yfinance', 'VRTX_yfinance', 'VZ_yfinance', 'V_yfinance', 'WELL_yfinance', 'WFC_yfinance', 'WMT_yfinance', 'XOM_yfinance']
+
+Strategy Percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  ann_mean: 10.35
+  sharpe: 0.4194
+  geometric_worst_drawdown: -57.25 (peak: 2000-03-07, trough: 2003-08-06)
+  calmar: 0.1316
+  gaintolossratio: 0.997
+  hitrate: 0.5205
+  p_value: 0.02104
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 272.57%
+  Average leverage: 2.73x
+
+Estimated instrument weights (final, descending):
+  UBER_yfinance             0.0514
+  COP_yfinance              0.0424
+  CEG_yfinance              0.0350
+  --- total: 1.0000  (100 instruments with weight > 0)
+
+StrategyLS Percent stats:
+  (Strategy minus 1× SP500; long Strategy, short SP500)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: -4.469
+  sharpe: -0.1665
+  geometric_worst_drawdown: -92.55 (peak: 1994-07-12, trough: 2024-01-03)
+  calmar: -0.02881
+  gaintolossratio: 1.009
+  hitrate: 0.4893
+  p_value: 0.3594
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 372.57%
+  Average leverage: 3.73x
+  Excess long capital (avg): 173.89%
+
+B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 25.07
+  sharpe: 0.9503
+  geometric_worst_drawdown: -52.46 (peak: 2007-10-31, trough: 2009-03-09)
+  calmar: 0.3788
+  gaintolossratio: 1.03
+  hitrate: 0.5334
+  p_value: 1.741e-07
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 257.44%
+  Average leverage: 2.57x
+
+Estimated instrument weights (final, descending):
+  COP_yfinance              0.0502
+  UBER_yfinance             0.0464
+  CVX_yfinance              0.0383
+  --- total: 1.0000  (100 instruments with weight > 0)
+
+B&HLS Percent stats:
+  (B&H minus 1× SP500; long B&H, short SP500)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 10.54
+  sharpe: 0.6714
+  geometric_worst_drawdown: -23.82 (peak: 2020-02-19, trough: 2020-10-28)
+  calmar: 0.4069
+  gaintolossratio: 1.067
+  hitrate: 0.5147
+  p_value: 0.0002215
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 357.44%
+  Average leverage: 3.57x
+  Excess long capital (avg): 157.79%
+
+B&HLS_levS Percent stats:
+  (B&H minus SP500 shorted at B&H leverage; long B&H, short SP500 × B&H gross)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: -11.84
+  sharpe: -0.5575
+  geometric_worst_drawdown: -98.65 (peak: 1994-11-22, trough: 2024-03-20)
+  calmar: -0.03265
+  gaintolossratio: 1.065
+  hitrate: 0.4589
+  p_value: 0.002162
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 514.88%
+  Average leverage: 5.15x
+
+B&H cap capital percent stats:
+  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 8.576
+  sharpe: 0.6603
+  geometric_worst_drawdown: -40.20 (peak: 2007-10-31, trough: 2009-03-09)
+  calmar: 0.1819
+  gaintolossratio: 0.9933
+  hitrate: 0.5334
+  p_value: 0.0002812
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 99.65%
+  Average leverage: 1.00x
+
+B&H_lowvol Percent stats:
+  (B&H scaled to 0.5× returns to emulate lower vol target)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 12.53
+  sharpe: 0.9503
+  geometric_worst_drawdown: -29.62 (peak: 2007-10-31, trough: 2009-03-09)
+  calmar: 0.3788
+  gaintolossratio: 1.03
+  hitrate: 0.5334
+  p_value: 1.741e-07
+
+B&H_cap_80 Percent stats:
+  (B&H with gross capped at 80%%; when gross>0.8 scale weights down)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 6.828
+  sharpe: 0.6371
+  geometric_worst_drawdown: -35.15 (peak: 2007-10-31, trough: 2008-11-20)
+  calmar: 0.1668
+  gaintolossratio: 0.9915
+  hitrate: 0.5334
+  p_value: 0.0004573
+
+B&H_hedge_50 Percent stats:
+  (B&H partially hedged: short 0.5× SP500)
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 20.64
+  sharpe: 1.052
+  geometric_worst_drawdown: -29.83 (peak: 2007-10-31, trough: 2008-11-19)
+  calmar: 0.6269
+  gaintolossratio: 1.034
+  hitrate: 0.5374
+  p_value: 7.355e-09
+
+B&H benchmarks (1× notional buy-and-hold):
+
+SP500 B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 8.864
+  sharpe: 0.4768
+  geometric_worst_drawdown: -63.10 (peak: 2000-03-24, trough: 2009-03-09)
+  calmar: 0.1141
+  gaintolossratio: 0.9252
+  hitrate: 0.5419
+  p_value: 0.008709
+
+SPY_yfinance B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 1994-07-12 to 2024-03-28
+  ann_mean: 8.879
+  sharpe: 0.6189
+  geometric_worst_drawdown: -43.08 (peak: 2007-10-09, trough: 2009-03-09)
+  calmar: 0.1743
+  gaintolossratio: 0.9429
+  hitrate: 0.5444
+  p_value: 0.0006625
+
+Total runtime: 14 min 16.8 sec (856.8 sec)

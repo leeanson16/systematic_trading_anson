@@ -3,6 +3,7 @@ Download market data and simple metrics via yfinance and Fed (FRED).
 
 Outputs:
   - data/custom/GSPC.csv, SPY_yfinance_unadj.csv, SPY_yfinance_adj.csv
+  - data/custom/SPXL_yfinance_unadj.csv, SPXL_yfinance_adj.csv
   - data/custom/FUNDING_COST.csv (FRED DGS3MO / 100, same source as FUNDING_COST in multiple_prices)
   - data/futures/multiple_prices_csv/{CODE}.csv (unadj) and adjusted_prices_csv/{CODE}.csv (adj) for all symbols in instruments CSV (code = symbol + _yfinance).
 
@@ -20,6 +21,7 @@ INSTRUMENTS_CSV = "data/custom/S&P_500_component_stocks.csv"
 DELAY_BETWEEN_TICKERS_SEC = 0.25
 INSTRUMENTS_COLUMN = "Symbol"
 YFINANCE_INSTRUMENT_SUFFIX = "_yfinance"
+DOWNLOAD_SPXL = False
 
 
 def _get_tickers_from_csv():
@@ -215,6 +217,21 @@ def main() -> None:
         _build_and_save_with_div_and_funding(
             spy_price_adj, div_yield_adj, treasury_3mo_df, spy_adj_path, minimal_columns=True
         )
+
+    # SPXL: data/custom, with _unadj / _adj suffix
+    if DOWNLOAD_SPXL:
+        spxl_unadj_path = os.path.join(_out_dir(), "SPXL_yfinance_unadj.csv")
+        spxl_adj_path = os.path.join(_out_dir(), "SPXL_yfinance_adj.csv")
+        if not os.path.isfile(spxl_unadj_path):
+            spxl_price_unadj, spxl_div_yield_unadj = _get_ticker_price_and_dividend_yield("SPXL", auto_adjust=False)
+            _build_and_save_with_div_and_funding(
+                spxl_price_unadj, spxl_div_yield_unadj, treasury_3mo_df, spxl_unadj_path, minimal_columns=False
+            )
+        if not os.path.isfile(spxl_adj_path):
+            spxl_price_adj, spxl_div_yield_adj = _get_ticker_price_and_dividend_yield("SPXL", auto_adjust=True)
+            _build_and_save_with_div_and_funding(
+                spxl_price_adj, spxl_div_yield_adj, treasury_3mo_df, spxl_adj_path, minimal_columns=True
+            )
 
     # All symbols from instruments CSV: multiple_prices_csv (unadj), adjusted_prices_csv (adj), code = symbol + _yfinance
     yfinance_tickers = _get_tickers_from_csv()
