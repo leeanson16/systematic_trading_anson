@@ -1,0 +1,231 @@
+estimatedsystem.py run at 2026-04-29T15:19:06.866427
+
+Data period: 2006-01-26 to 2024-03-28
+
+Sharpe: 0.2453
+
+Instruments: ['AUD', 'EUR', 'GOLD', 'SILVER', 'VIX']
+
+Strategy Percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  ann_mean: 5.816
+  sharpe: 0.2453
+  geometric_worst_drawdown: -67.97 (peak: 2018-01-16, trough: 2022-11-15)
+  calmar: 0.05775
+  gaintolossratio: 0.9702
+  hitrate: 0.5191
+  p_value: 0.2911
+
+  You can also plot / print: ['rolling_ann_std', 'drawdown', 'curve', 'percent'] (time series)
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 178.01%
+  Average leverage: 1.78x
+
+Estimated instrument weights (final, descending):
+  VIX                       0.4136
+  AUD                       0.1525
+  EUR                       0.1525
+  --- total: 1.0000  (5 instruments with weight > 0)
+
+StrategyLS Percent stats:
+  (Strategy minus 1× SP500; long Strategy, short SP500)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -5.757
+  sharpe: -0.2014
+  geometric_worst_drawdown: -91.21 (peak: 2008-11-20, trough: 2024-03-08)
+  calmar: -0.03103
+  gaintolossratio: 0.9684
+  hitrate: 0.4982
+  p_value: 0.3862
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 278.01%
+  Average leverage: 2.78x
+  Excess long capital (avg): 82.62%
+
+B&H percent stats:
+  (includes margin cost on excess capital: data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -8.237
+  sharpe: -0.4781
+  geometric_worst_drawdown: -91.45 (peak: 2011-08-22, trough: 2024-02-29)
+  calmar: -0.0364
+  gaintolossratio: 1.03
+  hitrate: 0.4722
+  p_value: 0.03969
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 185.24%
+  Average leverage: 1.85x
+
+Estimated instrument weights (final, descending):
+  EUR                       0.3560
+  AUD                       0.2469
+  GOLD                      0.1710
+  --- total: 1.0000  (5 instruments with weight > 0)
+
+B&HLS Percent stats:
+  (B&H minus 1× SP500; long B&H, short SP500)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -19.97
+  sharpe: -0.7026
+  geometric_worst_drawdown: -99.38 (peak: 2009-03-09, trough: 2024-03-27)
+  calmar: -0.04401
+  gaintolossratio: 1.094
+  hitrate: 0.4464
+  p_value: 0.00251
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 285.24%
+  Average leverage: 2.85x
+  Excess long capital (avg): 85.67%
+
+B&HLS_levS Percent stats:
+  (B&H minus SP500 shorted at B&H leverage; long B&H, short SP500 × B&H gross)
+  (includes margin cost on excess long capital only: (long-1); data/custom/FUNDING_COST.csv + 100bp)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -30.3
+  sharpe: -0.7893
+  geometric_worst_drawdown: -99.95 (peak: 2009-03-09, trough: 2024-03-27)
+  calmar: -0.04659
+  gaintolossratio: 1.09
+  hitrate: 0.4439
+  p_value: 0.0006873
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 370.47%
+  Average leverage: 3.70x
+
+B&H cap capital percent stats:
+  (Originated from B&H of the system; max capital used capped at 100%: normalize weights when gross > 100%%)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -4.601
+  sharpe: -0.464
+  geometric_worst_drawdown: -72.30 (peak: 2011-08-22, trough: 2024-02-29)
+  calmar: -0.03756
+  gaintolossratio: 1.031
+  hitrate: 0.4722
+  p_value: 0.04592
+
+Capital usage (gross notional vs notional capital):
+  Average capital used: 99.57%
+  Average leverage: 1.00x
+
+B&H_lowvol Percent stats:
+  (B&H scaled to 0.5× returns to emulate lower vol target)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -4.119
+  sharpe: -0.4781
+  geometric_worst_drawdown: -69.29 (peak: 2011-08-22, trough: 2024-02-29)
+  calmar: -0.0364
+  gaintolossratio: 1.03
+  hitrate: 0.4722
+  p_value: 0.03969
+
+B&H_cap_80 Percent stats:
+  (B&H with gross capped at 80%%; when gross>0.8 scale weights down)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -3.661
+  sharpe: -0.4575
+  geometric_worst_drawdown: -63.84 (peak: 2011-08-22, trough: 2024-02-29)
+  calmar: -0.03737
+  gaintolossratio: 1.031
+  hitrate: 0.4722
+  p_value: 0.04903
+
+B&H_hedge_50 Percent stats:
+  (B&H partially hedged: short 0.5× SP500)
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -13.01
+  sharpe: -0.6056
+  geometric_worst_drawdown: -96.80 (peak: 2009-12-03, trough: 2024-02-29)
+  calmar: -0.04157
+  gaintolossratio: 1.042
+  hitrate: 0.4635
+  p_value: 0.009189
+
+B&H benchmarks (1× notional buy-and-hold):
+
+GOLD B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: 6.9
+  sharpe: 0.3882
+  geometric_worst_drawdown: -45.48 (peak: 2011-08-22, trough: 2015-12-17)
+  calmar: 0.1293
+  gaintolossratio: 0.9795
+  hitrate: 0.5228
+  p_value: 0.09487
+
+SILVER B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: 7.383
+  sharpe: 0.2277
+  geometric_worst_drawdown: -79.18 (peak: 2011-04-25, trough: 2020-03-19)
+  calmar: 0.06154
+  gaintolossratio: 1.015
+  hitrate: 0.507
+  p_value: 0.3271
+
+AUD B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: 1.524
+  sharpe: 0.1195
+  geometric_worst_drawdown: -41.88 (peak: 2013-04-11, trough: 2020-03-19)
+  calmar: 0.0299
+  gaintolossratio: 0.9488
+  hitrate: 0.5186
+  p_value: 0.6072
+
+EUR B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 2006-01-26 to 2024-03-28
+  ann_mean: -1.323
+  sharpe: -0.149
+  geometric_worst_drawdown: -47.19 (peak: 2008-04-22, trough: 2022-09-27)
+  calmar: -0.02296
+  gaintolossratio: 0.9651
+  hitrate: 0.5024
+  p_value: 0.5215
+
+VIX B&H percent stats:
+  Average capital used: 100.00%%
+  Average leverage: 1.00x
+  Data period: 2006-01-26 to 2024-03-27
+  ann_mean: -24.15
+  sharpe: -0.5173
+  geometric_worst_drawdown: -99.93 (peak: 2008-11-20, trough: 2024-03-27)
+  calmar: -0.04329
+  gaintolossratio: 1.204
+  hitrate: 0.4298
+  p_value: 0.02606
+
+B&H weighted-basket percent stats (no rebalance):
+  Instruments: ['GOLD', 'SILVER', 'AUD', 'EUR', 'VIX']
+  Terminal weights source: 1-day USD volume
+  Terminal weight date used: 2024-03-27
+  Data period: 2006-01-26 to 2024-03-27
+  ann_mean: -19.2
+  sharpe: -0.5181
+  geometric_worst_drawdown: -99.66 (peak: 2008-11-20, trough: 2024-02-27)
+  calmar: -0.04103
+  gaintolossratio: 1.16
+  hitrate: 0.4382
+  p_value: 0.02585
+  Final weights at as-of date:
+    GOLD                      0.3467
+    EUR                       0.3319
+    VIX                       0.1928
+    AUD                       0.0768
+    SILVER                    0.0519
+
+Total runtime: 1 min 17.3 sec (77.3 sec)

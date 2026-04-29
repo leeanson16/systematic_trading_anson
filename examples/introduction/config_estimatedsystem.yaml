@@ -1,6 +1,6 @@
 # config for introduction estimated system
-start_date: "1994-07-12" #1972-01-01 1984-01-01 1994-07-12
-end_date: "2027-01-01" # 2024-03-28 2027-01-01
+start_date: "2018-07-01" #1972-01-01 1984-01-01 1994-07-12 2006-01-26 2014-03-28 2018-07-01
+end_date: "2024-03-28" # 2024-03-28 2027-01-01 2018-07-01
 
 # Volatility target for the system (overrides futuresestimateconfig.yaml percentage_vol_target)
 percentage_vol_target: 20.0
@@ -21,7 +21,15 @@ instruments_from_csv: "data/custom/S&P_500_component_stocks_1-100.csv"
 instruments_column: "Symbol"
 instruments_suffix: "_yfinance"
 
-# # By instruments
+# # By instruments #1
+# instruments:
+#   ['GOLD',
+#   'SILVER',
+#   'AUD',
+#   'EUR',
+#   'VIX']
+
+# # By instruments #2
 # instruments:
 #   ['SOFR',
 #   'US10',
@@ -30,9 +38,29 @@ instruments_suffix: "_yfinance"
 #   'CORN',
 #   'V2X']
 
-bnh_instruments:
-  ['SP500',
-  'SPY_yfinance']
+# bnh_instruments:
+#   ['GOLD',
+#   'SILVER',
+#   'AUD',
+#   'EUR',
+#   'VIX']
+
+# bnShort_instruments:
+#   # ['EUR',
+#   # 'VIX']
+
+# # Optional combined benchmark dict (used for B&H long + B&S short section).
+# # If a symbol is missing here, script falls back to bnh_volume_weights_usd / bnShort_volume_weights_usd.
+# bnh_bns_volume_weights_usd:
+#   GOLD: 21950050300
+#   SILVER: 3283473600
+#   AUD: 4859922600
+#   EUR: 21009315883
+#   VIX: 12206000000
+
+# bnh_weights_asof_dates:
+#   ["2024-03-28", "2024-03-27"]
+
 
 Notes: |
   Data periods (BBG):

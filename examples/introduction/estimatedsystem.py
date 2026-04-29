@@ -58,6 +58,14 @@ FUNDING_COST_FILENAME = "FUNDING_COST.csv"
 # StrategyLS/B&HLS: margin cost only on excess short capital = (used_short_capital * LS_MARGIN_SHORT_GROSS_FACTOR) - 1; no long-side margin.
 LS_SHORT_NOTIONAL = 1.0
 LS_MARGIN_SHORT_GROSS_FACTOR = 1.5
+BNH_VOLUME_WEIGHTS_USD_DEFAULT = {
+    "GOLD": 21950050300.0,
+    "SILVER": 3283473600.0,
+    "AUD": 4859922600.0,
+    "EUR": 21009315883.0,
+    "VIX": 12206000000.0,
+}
+BNH_WEIGHT_ASOF_CANDIDATES_DEFAULT = ["2024-03-28", "2024-03-27"]
 
 
 def _gross_capital_usage_and_leverage(system, instruments, end_ts, pct_index):
@@ -289,6 +297,90 @@ def _build_bh_stats(curve_or_returns, label):
     stats_obj = curve.percent.stats()
     geo_dd, peak, trough = _geo_worst_drawdown(returns_decimal.dropna())
     return curve, stats_obj, geo_dd, peak, trough
+
+
+def _no_rebalance_returns_from_terminal_weights(
+    returns_decimal_df: pd.DataFrame,
+    terminal_weights: pd.Series,
+    asof_candidates,
+):
+    """Build no-rebalance basket returns from terminal weights at as-of date.
+    Weights before as-of drift only via relative price changes."""
+    returns_decimal_df = returns_decimal_df.sort_index().dropna(how="any")
+    if returns_decimal_df.empty:
+        return None, None, None
+
+    cum = (1.0 + returns_decimal_df).cumprod()
+    asof_date = None
+    for candidate in asof_candidates:
+        candidate_ts = pd.Timestamp(candidate)
+        valid_idx = cum.index[cum.index <= candidate_ts]
+        if len(valid_idx) > 0:
+            asof_date = valid_idx[-1]
+            break
+    if asof_date is None:
+        asof_date = cum.index[-1]
+
+    terminal_weights = terminal_weights.reindex(cum.columns).fillna(0.0)
+    total_terminal = float(terminal_weights.sum())
+    if total_terminal <= 0:
+        return None, None, None
+    terminal_weights = terminal_weights / total_terminal
+
+    cum_asof = cum.loc[asof_date]
+    drift_raw = cum.divide(cum_asof, axis=1).multiply(terminal_weights, axis=1)
+    drift_weights = drift_raw.div(drift_raw.sum(axis=1), axis=0).fillna(0.0)
+
+    prev_weights = drift_weights.shift(1)
+    if len(prev_weights) > 0:
+        prev_weights.iloc[0] = drift_weights.iloc[0]
+    basket_returns = (prev_weights * returns_decimal_df).sum(axis=1).dropna()
+
+    return basket_returns, drift_weights, asof_date
+
+
+def _no_rebalance_signed_returns_from_terminal_abs_weights(
+    returns_decimal_df: pd.DataFrame,
+    terminal_abs_weights: pd.Series,
+    signs: pd.Series,
+    asof_candidates,
+):
+    """No-rebalance signed basket with terminal absolute weights.
+    Absolute weights drift with underlying price moves; signed exposure applies to returns.
+    Total absolute weight is normalized to 1."""
+    returns_decimal_df = returns_decimal_df.sort_index().dropna(how="any")
+    if returns_decimal_df.empty:
+        return None, None, None
+
+    cum = (1.0 + returns_decimal_df).cumprod()
+    asof_date = None
+    for candidate in asof_candidates:
+        candidate_ts = pd.Timestamp(candidate)
+        valid_idx = cum.index[cum.index <= candidate_ts]
+        if len(valid_idx) > 0:
+            asof_date = valid_idx[-1]
+            break
+    if asof_date is None:
+        asof_date = cum.index[-1]
+
+    terminal_abs_weights = terminal_abs_weights.reindex(cum.columns).fillna(0.0).abs()
+    signs = signs.reindex(cum.columns).fillna(0.0)
+    total_abs_terminal = float(terminal_abs_weights.sum())
+    if total_abs_terminal <= 0:
+        return None, None, None
+    terminal_abs_weights = terminal_abs_weights / total_abs_terminal
+
+    cum_asof = cum.loc[asof_date]
+    drift_abs_raw = cum.divide(cum_asof, axis=1).multiply(terminal_abs_weights, axis=1)
+    drift_abs = drift_abs_raw.div(drift_abs_raw.sum(axis=1), axis=0).fillna(0.0)
+    drift_signed = drift_abs.multiply(signs, axis=1)
+
+    prev_signed = drift_signed.shift(1)
+    if len(prev_signed) > 0:
+        prev_signed.iloc[0] = drift_signed.iloc[0]
+    basket_returns = (prev_signed * returns_decimal_df).sum(axis=1).dropna()
+
+    return basket_returns, drift_signed, asof_date
 
 # B&H: from config start_date; positions are the same vol-targeted sizes as the system
 # Each instrument uses avg_pos = vol_scalar × instr_weight × IDM (forecast = +10, always long)
@@ -666,6 +758,9 @@ with open(log_path, "w") as f:
         _write_stats(f, bh_hedge50_stats, bh_hedge50_geo_dd, bh_hedge50_peak, bh_hedge50_trough)
 
     bnh_list = config.get_element_or_default("bnh_instruments", []) or []
+    bnshort_list = config.get_element_or_default("bnShort_instruments", []) or []
+    _bnh_returns = {}
+    _bnshort_returns = {}
     if bnh_list:
         f.write("\nB&H benchmarks (1× notional buy-and-hold):\n")
         for code in bnh_list:
@@ -678,12 +773,105 @@ with open(log_path, "w") as f:
                 bh_series = bh_series.loc[bh_series.index <= eff_end]
             bh_series = bh_series.dropna()
             bh_dec = bh_series / 100
+            _bnh_returns[code] = bh_dec
             _, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh = _build_bh_stats(bh_dec, f"{code} B&H")
             f.write("\n%s B&H percent stats:\n" % code)
             f.write("  Average capital used: 100.00%%\n")
             f.write("  Average leverage: 1.00x\n")
             f.write("  Data period: %s\n" % _period_str(bh_series.index))
             _write_stats(f, stats_obj_bnh, geo_dd_bnh, peak_bnh, trough_bnh)
+
+    if bnshort_list:
+        f.write("\nB&S benchmarks (1× notional short-and-hold):\n")
+        for code in bnshort_list:
+            bh_curve = _bh_curve_1x_notional(system, code)
+            bh_series = pd.Series(bh_curve.percent.values, index=bh_curve.percent.index)
+            eff_start, eff_end = _instr_window(code)
+            if eff_start is not None:
+                bh_series = bh_series.loc[bh_series.index >= eff_start]
+            if eff_end is not None:
+                bh_series = bh_series.loc[bh_series.index <= eff_end]
+            bh_series = bh_series.dropna()
+            short_dec = -bh_series / 100
+            _bnshort_returns[code] = short_dec
+            _, stats_obj_bns, geo_dd_bns, peak_bns, trough_bns = _build_bh_stats(short_dec, f"{code} B&S")
+            f.write("\n%s B&S percent stats:\n" % code)
+            f.write("  Average capital used: 100.00%%\n")
+            f.write("  Average leverage: 1.00x\n")
+            f.write("  Data period: %s\n" % _period_str(bh_series.index))
+            _write_stats(f, stats_obj_bns, geo_dd_bns, peak_bns, trough_bns)
+
+    _bnh_volume_weights = config.get_element_or_default("bnh_volume_weights_usd", BNH_VOLUME_WEIGHTS_USD_DEFAULT) or {}
+    _bnh_asof_candidates = config.get_element_or_default("bnh_weights_asof_dates", BNH_WEIGHT_ASOF_CANDIDATES_DEFAULT) or BNH_WEIGHT_ASOF_CANDIDATES_DEFAULT
+    _eligible_codes = [code for code in bnh_list if code in _bnh_returns and code in _bnh_volume_weights]
+    if _eligible_codes:
+        _weighted_df = pd.concat([_bnh_returns[code].rename(code) for code in _eligible_codes], axis=1, join="inner").dropna(how="any")
+        if len(_weighted_df) > 0:
+            _terminal_w = pd.Series({code: float(_bnh_volume_weights[code]) for code in _eligible_codes})
+            _weighted_ret, _drift_weights, _asof_date_used = _no_rebalance_returns_from_terminal_weights(
+                _weighted_df,
+                _terminal_w,
+                _bnh_asof_candidates,
+            )
+            if _weighted_ret is not None and len(_weighted_ret) > 0:
+                _, _w_stats, _w_geo_dd, _w_peak, _w_trough = _build_bh_stats(_weighted_ret, "B&H weighted basket")
+                f.write("\nB&H weighted-basket percent stats (no rebalance):\n")
+                f.write("  Instruments: %s\n" % _eligible_codes)
+                f.write("  Terminal weights source: 1-day USD volume\n")
+                f.write("  Terminal weight date used: %s\n" % (_asof_date_used.strftime("%Y-%m-%d") if hasattr(_asof_date_used, "strftime") else _asof_date_used))
+                f.write("  Data period: %s\n" % _period_str(_weighted_ret.index))
+                _write_stats(f, _w_stats, _w_geo_dd, _w_peak, _w_trough)
+                _asof_weights = _drift_weights.loc[_asof_date_used].sort_values(ascending=False)
+                f.write("  Final weights at as-of date:\n")
+                for _code, _w in _asof_weights.items():
+                    if _w > 1e-8:
+                        f.write("    %-25s %.4f\n" % (_code, _w))
+    _bnshort_volume_weights = config.get_element_or_default("bnShort_volume_weights_usd", BNH_VOLUME_WEIGHTS_USD_DEFAULT) or {}
+    _combined_volume_weights = config.get_element_or_default("bnh_bns_volume_weights_usd", {}) or {}
+    _combined_codes = []
+    _combined_signs = {}
+    _combined_abs_weights = {}
+    for _code in bnh_list:
+        if _code in _bnh_returns:
+            _combined_codes.append(_code)
+            _combined_signs[_code] = 1.0
+            _combined_abs_weights[_code] = float(_combined_volume_weights.get(_code, _bnh_volume_weights.get(_code, 0.0)))
+    for _code in bnshort_list:
+        if _code in _bnshort_returns:
+            _combined_codes.append(_code)
+            _combined_signs[_code] = -1.0
+            _combined_abs_weights[_code] = float(_combined_volume_weights.get(_code, _bnshort_volume_weights.get(_code, 0.0)))
+    _combined_codes = [c for c in _combined_codes if _combined_abs_weights.get(c, 0.0) > 0.0]
+    if _combined_codes:
+        _combined_underlying = {}
+        for _code in _combined_codes:
+            if _code in _bnh_returns:
+                _combined_underlying[_code] = _bnh_returns[_code]
+            elif _code in _bnshort_returns:
+                _combined_underlying[_code] = -_bnshort_returns[_code]
+        _combined_df = pd.concat([_combined_underlying[c].rename(c) for c in _combined_codes], axis=1, join="inner").dropna(how="any")
+        if len(_combined_df) > 0:
+            _combined_terminal_abs = pd.Series({_code: _combined_abs_weights[_code] for _code in _combined_codes})
+            _combined_signs_s = pd.Series({_code: _combined_signs[_code] for _code in _combined_codes})
+            _combined_ret, _combined_drift_signed, _combined_asof = _no_rebalance_signed_returns_from_terminal_abs_weights(
+                _combined_df,
+                _combined_terminal_abs,
+                _combined_signs_s,
+                _bnh_asof_candidates,
+            )
+            if _combined_ret is not None and len(_combined_ret) > 0:
+                _, _combined_stats, _combined_geo_dd, _combined_peak, _combined_trough = _build_bh_stats(_combined_ret, "B&H/B&S combined")
+                f.write("\nB&H and B&S combined benchmark percent stats (volume-weighted, no rebalance):\n")
+                f.write("  Long instruments: %s\n" % [c for c in _combined_codes if _combined_signs[c] > 0])
+                f.write("  Short instruments: %s\n" % [c for c in _combined_codes if _combined_signs[c] < 0])
+                f.write("  Terminal weight date used: %s\n" % (_combined_asof.strftime("%Y-%m-%d") if hasattr(_combined_asof, "strftime") else _combined_asof))
+                f.write("  Data period: %s\n" % _period_str(_combined_ret.index))
+                _write_stats(f, _combined_stats, _combined_geo_dd, _combined_peak, _combined_trough)
+                _combined_asof_signed = _combined_drift_signed.loc[_combined_asof].sort_values(ascending=False)
+                f.write("  Final signed weights at as-of date (sum abs = 1):\n")
+                for _code, _w in _combined_asof_signed.items():
+                    if abs(_w) > 1e-8:
+                        f.write("    %-25s %+0.4f\n" % (_code, _w))
     _wall_elapsed = _time.perf_counter() - _wall_start
     _mins, _secs = divmod(_wall_elapsed, 60)
     f.write("\nTotal runtime: %d min %.1f sec (%.1f sec)\n" % (_mins, _secs, _wall_elapsed))
